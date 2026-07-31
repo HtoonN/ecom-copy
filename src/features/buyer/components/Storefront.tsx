@@ -156,6 +156,7 @@ export default function Storefront({
   const [fetchedProducts, setFetchedProducts] = useState<Product[] | null>(null)
   const [fetchedFacetBase, setFetchedFacetBase] = useState<Product[] | null>(null)
   const [productsLoading, setProductsLoading] = useState(false)
+  const [facetLoading, setFacetLoading] = useState(false)
   const [page, setPage] = useState(1)
   const [sortOrder, setSortOrder] = useState<'price-asc' | 'price-desc' | 'most-viewed'>(
     'price-asc',
@@ -245,6 +246,7 @@ export default function Storefront({
   useEffect(() => {
     if (!isFiltered) {
       setFetchedFacetBase(null)
+      setFacetLoading(false)
       return
     }
     const handle = window.setTimeout(() => {
@@ -260,6 +262,7 @@ export default function Storefront({
       facetAbortRef.current?.abort()
       const controller = new AbortController()
       facetAbortRef.current = controller
+      setFacetLoading(true)
       fetch(`/api/products?${params.toString()}`, { signal: controller.signal })
         .then((response) =>
           response.ok ? response.json() : Promise.reject(new Error('Failed to load products.')),
@@ -268,6 +271,7 @@ export default function Storefront({
         .catch((error) => {
           if ((error as Error).name !== 'AbortError') console.error(error)
         })
+        .finally(() => setFacetLoading(false))
     }, 300)
     return () => {
       window.clearTimeout(handle)
@@ -520,7 +524,7 @@ export default function Storefront({
                   <span>
                     {' '}
                     ({products.length.toLocaleString('en-US')} {t('productsCountSuffix')})
-                    {productsLoading && (
+                    {(productsLoading || facetLoading) && (
                       <span className="buyer-results-loading">{t('loadingResults')}</span>
                     )}
                   </span>

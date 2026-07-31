@@ -1054,7 +1054,7 @@ function ProductModal({
             name="price"
             type="number"
             min="0"
-            step="0.01"
+            step="any"
             required
             defaultValue={product ? product.priceCents / 100 : undefined}
           />
