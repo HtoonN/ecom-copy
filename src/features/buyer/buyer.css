@@ -1294,7 +1294,7 @@
 }
 
 .buyer-product-detail-dialog {
-  width: min(58rem, 100%);
+  width: min(72rem, 100%);
   padding-bottom: var(--ui-space-8);
 }
 
@@ -1372,7 +1372,15 @@
 }
 
 .buyer-product-dialog-description {
+  max-height: 12rem;
+  overflow-y: auto;
   white-space: pre-line;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.buyer-product-dialog-description::-webkit-scrollbar {
+  display: none;
 }
 
 .buyer-product-dialog-identity {

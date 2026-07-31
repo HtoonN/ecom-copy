@@ -1,14 +1,13 @@
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/Header'
 import Storefront from '@/features/buyer/components/Storefront'
 import { prisma } from '@/lib/prisma'
-import { readSession } from '@/lib/auth'
 import { productListInclude } from '@/lib/product-listing'
 
 export default async function ShopPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const [shop, session, brands, sports, productTypes] = await Promise.all([
+  const [shop, brands, sports, productTypes] = await Promise.all([
     prisma.shop.findUnique({
       where: { slug },
       include: {
@@ -19,14 +18,12 @@ export default async function ShopPage({ params }: { params: Promise<{ slug: str
         },
       },
     }),
-    readSession(),
     prisma.brand.findMany({ orderBy: { sortOrder: 'asc' } }),
     prisma.sport.findMany({ orderBy: { sortOrder: 'asc' } }),
     prisma.productType.findMany({ orderBy: { sortOrder: 'asc' } }),
   ])
 
   if (!shop || !shop.active) notFound()
-  if (session?.role === 'VENDOR') redirect('/vendor?tab=dashboard')
 
   return (
     <>

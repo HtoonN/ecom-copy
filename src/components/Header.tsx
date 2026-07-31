@@ -38,7 +38,7 @@ export default async function Header({ initialQuery = '' }: { initialQuery?: str
           <HeaderSearch initialQuery={initialQuery} />
           <div className="nav-links">
             <LanguageSwitch />
-            {session && (
+            {session && session.role !== 'VENDOR' && (
               <Link className="button soft" href={dashboard}>
                 {accountLabel}
               </Link>
