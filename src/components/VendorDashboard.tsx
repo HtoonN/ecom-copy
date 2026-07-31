@@ -52,7 +52,8 @@ function catalogSelectOptions(
   if (currentValue) options.set(currentValue, { value: currentValue, label: currentValue })
   else options.set('', { value: '', label: t('selectPlaceholder'), disabled: true })
   for (const item of items) {
-    options.set(item.nameEn, { value: item.nameEn, label: lang === 'en' ? item.nameEn : item.nameTh })
+    const value = lang === 'en' ? item.nameEn : item.nameTh
+    options.set(value, { value, label: value })
   }
   for (const extra of extras) {
     if (!options.has(extra)) options.set(extra, { value: extra, label: extra })
@@ -1035,11 +1036,10 @@ function ProductModal({
             onChange={(event) => setGender(event.target.value)}
             options={[
               ...(gender ? [] : [{ value: '', label: t('selectPlaceholder'), disabled: true }]),
-              ...Array.from(new Set([gender, ...GENDER_OPTIONS])).flatMap((value) =>
-                value
-                  ? [{ value, label: lang === 'en' ? value : GENDER_OPTION_LABEL_TH[value] || value }]
-                  : [],
-              ),
+              ...GENDER_OPTIONS.map((enValue) => {
+                const value = lang === 'en' ? enValue : GENDER_OPTION_LABEL_TH[enValue] || enValue
+                return { value, label: value }
+              }),
             ]}
           />
           <Select

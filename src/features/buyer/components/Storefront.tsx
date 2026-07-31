@@ -671,6 +671,18 @@ export default function Storefront({
   )
 }
 
+function useDefaultFiltersOpen() {
+  const [open, setOpen] = useState(true)
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 50rem)')
+    setOpen(!mql.matches)
+    const handler = (event: MediaQueryListEvent) => setOpen(!event.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
+  return open
+}
+
 function FilterGroup({
   title,
   items,
@@ -682,8 +694,9 @@ function FilterGroup({
   selected: string[]
   onToggle: (label: string) => void
 }) {
+  const defaultOpen = useDefaultFiltersOpen()
   return (
-    <details className="buyer-filter-group" open>
+    <details className="buyer-filter-group" open={defaultOpen}>
       <summary className="buyer-filter-group-header">
         {title}
         <ChevronDownIcon className="buyer-filter-chevron" aria-hidden="true" />
@@ -720,8 +733,9 @@ function PriceFilterGroup({
   onMaxChange: (value: string) => void
   onApply: () => void
 }) {
+  const defaultOpen = useDefaultFiltersOpen()
   return (
-    <details className="buyer-filter-group" open>
+    <details className="buyer-filter-group" open={defaultOpen}>
       <summary className="buyer-filter-group-header">
         {t('filterPrice')}
         <ChevronDownIcon className="buyer-filter-chevron" aria-hidden="true" />

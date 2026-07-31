@@ -316,10 +316,10 @@ textarea:-webkit-autofill:focus {
   background: #f4f4f4;
 }
 .market-banner-inner {
-  aspect-ratio: 4 / 1;
+  min-height: clamp(230px, 32vw, 300px);
   padding: 38px 46px;
   border-radius: 18px;
-  background: url('/mkp_banner.png') center / contain no-repeat;
+  background: url('/mkp_banner.png') center / cover no-repeat;
   color: #fff;
   display: flex;
   align-items: center;
@@ -1485,15 +1485,18 @@ td {
   .nav-inner {
     display: flex;
     flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .nav-links {
+    order: 1;
   }
   .header-search {
     position: static;
     transform: none;
-    order: -1;
+    order: 2;
     flex: 1 1 100%;
     width: auto;
     max-width: none;
-    margin-bottom: 10px;
   }
   .site-footer-inner {
     grid-template-columns: repeat(2, 1fr);
@@ -1515,6 +1518,10 @@ td {
     padding: 28px 24px;
     align-items: flex-start;
     flex-direction: column;
+  }
+  .market-banner h2,
+  .market-banner p {
+    white-space: normal;
   }
   .shop-identity {
     padding: 26px 22px;
@@ -1605,6 +1612,8 @@ td {
   .site-footer-inner {
     grid-template-columns: 1fr;
     padding-bottom: 25px;
+    justify-items: center;
+    text-align: center;
   }
   .site-footer-bottom-inner {
     flex-direction: column;

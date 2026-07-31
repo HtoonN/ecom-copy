@@ -66,7 +66,9 @@ export default function Footer() {
       <div className="site-footer-bottom">
         <div className="container site-footer-bottom-inner">
           <span>{t('footerRights', { year })}</span>
-          <Link href="/#shop">{t('footerTerms')}</Link>
+          <a href="https://matchday.co.th/tcindex" target="_blank" rel="noopener noreferrer">
+            {t('footerTerms')}
+          </a>
         </div>
       </div>
     </footer>
