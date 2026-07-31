@@ -1,0 +1,242 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Role {
+  CUSTOMER
+  VENDOR
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+}
+
+enum DiscountType {
+  PERCENT
+  FIXED
+}
+
+enum ListingMode {
+  NATIVE
+  AFFILIATE
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  name String
+  email String @unique
+  passwordHash String @map("password_hash")
+  role Role @default(CUSTOMER)
+  phone String?
+  active Boolean @default(true)
+  shop Shop?
+  addresses Address[]
+  orders Order[]
+  refunds Refund[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@map("market_users")
+}
+
+model Shop {
+  id Int @id @default(autoincrement())
+  ownerId Int @unique @map("owner_id")
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name String
+  slug String @unique
+  description String? @db.Text
+  logoUrl String? @map("logo_url")
+  address String?
+  active Boolean @default(true)
+  products Product[]
+  coupons Coupon[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@map("market_shops")
+}
+
+model ProductType {
+  id Int @id @default(autoincrement())
+  nameEn String @unique @map("name_en")
+  nameTh String @map("name_th")
+  sortOrder Int @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("market_categories")
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  nameEn String @unique @map("name_en")
+  nameTh String @map("name_th")
+  sortOrder Int @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("market_product_categories")
+}
+
+model Sport {
+  id Int @id @default(autoincrement())
+  nameEn String @unique @map("name_en")
+  nameTh String @map("name_th")
+  sortOrder Int @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("market_sports")
+}
+
+model Brand {
+  id Int @id @default(autoincrement())
+  nameEn String @unique @map("name_en")
+  nameTh String @map("name_th")
+  sortOrder Int @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("market_brands")
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+  shopId Int @map("shop_id")
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  name String @db.Text
+  sku String? @unique
+  slug String @unique
+  category String
+  productType String @default("Other") @map("product_type")
+  sport String?
+  gender String?
+  brand String?
+  description String @db.Text
+  imageUrls Json @map("image_urls")
+  priceCents Int @map("price_cents")
+  listingMode ListingMode @default(AFFILIATE) @map("listing_mode")
+  affiliateUrl Json @map("affiliate_url")
+  active Boolean @default(true)
+  orderItems OrderItem[]
+  views ProductView[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@index([shopId])
+  @@map("market_products")
+}
+
+model ProductView {
+  id Int @id @default(autoincrement())
+  productId Int @map("product_id")
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  viewedAt DateTime @default(now()) @map("viewed_at")
+
+  @@index([productId, viewedAt])
+  @@map("market_product_views")
+}
+
+model Address {
+  id Int @id @default(autoincrement())
+  userId Int @map("user_id")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label String
+  recipient String
+  phone String?
+  line1 String
+  city String
+  postalCode String @map("postal_code")
+  isDefault Boolean @default(false) @map("is_default")
+  @@map("market_addresses")
+}
+
+model Order {
+  id Int @id @default(autoincrement())
+  reference String @unique
+  customerId Int @map("customer_id")
+  customer User @relation(fields: [customerId], references: [id])
+  status OrderStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING) @map("payment_status")
+  subtotalCents Int @map("subtotal_cents")
+  discountCents Int @default(0) @map("discount_cents")
+  shippingCents Int @map("shipping_cents")
+  totalCents Int @map("total_cents")
+  shippingAddress String @map("shipping_address") @db.Text
+  trackingNumber String? @map("tracking_number")
+  couponCode String? @map("coupon_code")
+  items OrderItem[]
+  payments Payment[]
+  refunds Refund[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@index([customerId])
+  @@map("market_orders")
+}
+
+model OrderItem {
+  id Int @id @default(autoincrement())
+  orderId Int @map("order_id")
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId Int @map("product_id")
+  product Product @relation(fields: [productId], references: [id])
+  quantity Int
+  unitPriceCents Int @map("unit_price_cents")
+  status OrderStatus @default(PENDING)
+  @@index([orderId])
+  @@map("market_order_items")
+}
+
+model Coupon {
+  id Int @id @default(autoincrement())
+  shopId Int @map("shop_id")
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  code String @unique
+  type DiscountType
+  value Int
+  minimumCents Int @default(0) @map("minimum_cents")
+  active Boolean @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("market_coupons")
+}
+
+model Refund {
+  id Int @id @default(autoincrement())
+  userId Int @map("user_id")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId Int @map("order_id")
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  reason String @db.Text
+  status RefundStatus @default(REQUESTED)
+  response String? @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  @@map("market_refunds")
+}
+
+model Payment {
+  id Int @id @default(autoincrement())
+  orderId Int @map("order_id")
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  reference String @unique
+  provider String
+  amountCents Int @map("amount_cents")
+  status PaymentStatus
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("market_payments")
+}

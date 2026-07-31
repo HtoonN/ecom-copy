@@ -1,0 +1,53 @@
+{
+  "name": "matchday-marketplace",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node --require=./scripts/load-env.cjs node_modules/next/dist/bin/next dev",
+    "build": "node --require=./scripts/load-env.cjs node_modules/next/dist/bin/next build",
+    "start": "node --require=./scripts/load-env.cjs node_modules/next/dist/bin/next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"prisma/**/*.ts\" \"scripts/**/*.cjs\" \"*.{ts,mjs,json}\" README.md",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"prisma/**/*.ts\" \"scripts/**/*.cjs\" \"*.{ts,mjs,json}\" README.md",
+    "postinstall": "npm run prisma:generate",
+    "prisma:generate": "node --require=./scripts/load-env.cjs node_modules/prisma/build/index.js generate",
+    "db:push": "node --require=./scripts/load-env.cjs node_modules/prisma/build/index.js db push",
+    "db:affiliate": "node --require=./scripts/load-env.cjs scripts/apply-affiliate-schema.cjs",
+    "db:product-views": "node --require=./scripts/load-env.cjs scripts/apply-product-views-schema.cjs",
+    "db:product-details": "node --require=./scripts/load-env.cjs scripts/apply-product-details-schema.cjs",
+    "db:product-images": "node --require=./scripts/load-env.cjs scripts/apply-product-images-schema.cjs",
+    "db:shop-logo": "node --require=./scripts/load-env.cjs scripts/apply-shop-logo-schema.cjs",
+    "db:product-type": "node --require=./scripts/load-env.cjs scripts/apply-product-type-schema.cjs",
+    "db:product-name": "node --require=./scripts/load-env.cjs scripts/apply-product-name-schema.cjs",
+    "db:seed": "node --require=./scripts/load-env.cjs node_modules/tsx/dist/cli.mjs prisma/seed.ts"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@prisma/adapter-mariadb": "^7.9.0",
+    "@prisma/client": "^7.9.0",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.0",
+    "i18next": "^26.3.6",
+    "jose": "^6.2.3",
+    "mariadb": "^3.5.3",
+    "next": "16.2.10",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-i18next": "^17.0.11",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.10",
+    "prettier": "^3.9.6",
+    "prisma": "^7.9.0",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.1",
+    "typescript": "^5"
+  }
+}
