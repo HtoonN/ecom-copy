@@ -1,0 +1,18 @@
+/* Match compact type scale of the billing console redesign mockup (14px base) */
+html {
+  font-size: 14px !important; /* override Vuetify's html { font-size: 1rem } (=16px) */
+}
+
+.v-expansion-panel-text__wrapper {
+  padding: 0 !important;
+  padding-left: 5px !important;
+  padding-right: 5px !important;
+}
+.v-expansion-panel {
+  border-radius: 0 !important;
+  box-shadow: 0 !important;
+}
+
+.swal2-container {
+  z-index: 9999 !important;
+}

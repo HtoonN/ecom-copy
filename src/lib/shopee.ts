@@ -268,35 +268,39 @@ export async function scrapeShopeeProduct(value: unknown): Promise<ShopeeProduct
   const affiliateUrl = normalizeShopeeUrl(value)
   const { html } = await fetchShopeeHtml(affiliateUrl)
   const meta = metadata(html)
+  // The JSON-LD Product block in <head> is the same structured data Google reads for
+  // rich product cards — prefer it over the more fragile og: meta tags and hashed
+  // class-name DOM scraping, which only fill in whatever JSON-LD leaves out.
   const product = jsonLdProduct(html)
   const domProduct = extractShopeeDomProduct(html)
   const offers = Array.isArray(product?.offers) ? product.offers[0] : product?.offers
   const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)
   let name = decodeHtml(
-    meta.get('og:title') || product?.name || domProduct.name || (titleMatch ? titleMatch[1] : ''),
+    product?.name || meta.get('og:title') || domProduct.name || (titleMatch ? titleMatch[1] : ''),
   ).replace(/\s*\|\s*Shopee Thailand\s*$/i, '')
   const category = decodeHtml(String(product?.category || domProduct.category || ''))
-  let description = decodeHtml(meta.get('og:description') || product?.description || '')
-  const image = product?.image
-  let imageUrl =
-    safeShopeeImage(meta.get('og:image') || (Array.isArray(image) ? image[0] : image)) ||
-    extractShopeeImageFromHtml(html)
+  let description = decodeHtml(product?.description || meta.get('og:description') || '')
+  const jsonLdImages = (Array.isArray(product?.image) ? product.image : [product?.image])
+    .map(safeShopeeImage)
+    .filter(Boolean)
   let imageUrls = [
+    ...jsonLdImages,
     safeShopeeImage(meta.get('og:image')),
-    ...(Array.isArray(image) ? image.map(safeShopeeImage) : [safeShopeeImage(image)]),
     extractShopeeImageFromHtml(html),
   ]
     .filter((url, index, all) => url && all.indexOf(url) === index)
     .slice(0, 4)
+  let imageUrl = imageUrls[0] || ''
   let price = priceValue(
-    meta.get('product:price:amount') ||
+    offers?.price ||
+      offers?.lowPrice ||
+      meta.get('product:price:amount') ||
       meta.get('og:price:amount') ||
-      offers?.price ||
       domProduct.price,
   )
-  let compareAt = priceValue(meta.get('product:original_price:amount') || offers?.highPrice)
+  let compareAt = priceValue(offers?.highPrice || meta.get('product:original_price:amount'))
   const currency = String(
-    meta.get('product:price:currency') || offers?.priceCurrency || 'THB',
+    offers?.priceCurrency || meta.get('product:price:currency') || 'THB',
   ).toUpperCase()
 
   if (!name || !price) {

@@ -358,6 +358,15 @@
   margin-bottom: var(--ui-space-4);
 }
 
+.vendor-product-tabs .buyer-ui-button--primary {
+  background: #000;
+  color: #fff;
+}
+
+.vendor-product-tabs .buyer-ui-button--primary:hover:not(:disabled) {
+  background: #000;
+}
+
 .vendor-product-list .badge.warn {
   border: 0;
   background: transparent;
@@ -693,7 +702,7 @@
 }
 
 .vendor-form textarea.input {
-  min-height: calc(var(--ui-control-height-md) * 2);
+  min-height: calc(var(--ui-control-height-md) * 6);
   border: var(--ui-border-width) solid var(--ui-color-border);
   border-radius: var(--ui-radius-control);
   background: var(--ui-color-surface);
