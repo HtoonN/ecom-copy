@@ -7,7 +7,7 @@ import { productListInclude } from '@/lib/product-listing'
 
 export default async function ShopPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const [shop, brands, sports, productTypes] = await Promise.all([
+  const [shop, sports, productTypes] = await Promise.all([
     prisma.shop.findUnique({
       where: { slug },
       include: {
@@ -18,7 +18,6 @@ export default async function ShopPage({ params }: { params: Promise<{ slug: str
         },
       },
     }),
-    prisma.brand.findMany({ orderBy: { sortOrder: 'asc' } }),
     prisma.sport.findMany({ orderBy: { sortOrder: 'asc' } }),
     prisma.productType.findMany({ orderBy: { sortOrder: 'asc' } }),
   ])
@@ -59,7 +58,6 @@ export default async function ShopPage({ params }: { params: Promise<{ slug: str
             imageUrls: product.imageUrls as string[],
             affiliateUrl: product.affiliateUrl as string[],
           }))}
-          brands={brands.map((brand) => ({ nameEn: brand.nameEn, nameTh: brand.nameTh }))}
           sports={sports.map((sport) => ({ nameEn: sport.nameEn, nameTh: sport.nameTh }))}
           productTypes={productTypes.map((type) => ({ nameEn: type.nameEn, nameTh: type.nameTh }))}
           shopSlug={shop.slug}

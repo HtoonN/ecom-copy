@@ -10,14 +10,20 @@ export default async function Home({
 }: {
   searchParams: Promise<{ q?: string | string[] }>
 }) {
-  const [products, query, brands, sports, productTypes] = await Promise.all([
+  const [products, query, merchants, sports, productTypes] = await Promise.all([
     prisma.product.findMany({
       where: productListWhere({}),
       include: productListInclude,
       orderBy: { createdAt: 'desc' },
     }),
     searchParams,
-    prisma.brand.findMany({ orderBy: { sortOrder: 'asc' } }),
+    // Only merchants that actually have something listed; an empty storefront in the
+    // filter roster is a dead end for the buyer.
+    prisma.shop.findMany({
+      where: { active: true, products: { some: { active: true } } },
+      select: { name: true, slug: true },
+      orderBy: { name: 'asc' },
+    }),
     prisma.sport.findMany({ orderBy: { sortOrder: 'asc' } }),
     prisma.productType.findMany({ orderBy: { sortOrder: 'asc' } }),
   ])
@@ -33,7 +39,7 @@ export default async function Home({
             imageUrls: product.imageUrls as string[],
             affiliateUrl: product.affiliateUrl as string[],
           }))}
-          brands={brands.map((brand) => ({ nameEn: brand.nameEn, nameTh: brand.nameTh }))}
+          merchants={merchants}
           sports={sports.map((sport) => ({ nameEn: sport.nameEn, nameTh: sport.nameTh }))}
           productTypes={productTypes.map((type) => ({ nameEn: type.nameEn, nameTh: type.nameTh }))}
           initialQuery={initialQuery}

@@ -13,24 +13,36 @@ export type ProductListFilters = {
   sports?: string[]
   brands?: string[]
   shopSlug?: string
+  shopSlugs?: string[]
   minPriceCents?: number
   maxPriceCents?: number
 }
 
 export function productListWhere(filters: ProductListFilters): Prisma.ProductWhereInput {
-  const { query, category, productTypes, genders, sports, brands, shopSlug, minPriceCents, maxPriceCents } =
-    filters
+  const {
+    query,
+    category,
+    productTypes,
+    genders,
+    sports,
+    brands,
+    shopSlug,
+    shopSlugs,
+    minPriceCents,
+    maxPriceCents,
+  } = filters
   return {
     active: true,
-    ...(query
-      ? { OR: [{ name: { contains: query } }, { description: { contains: query } }] }
-      : {}),
+    ...(query ? { OR: [{ name: { contains: query } }, { description: { contains: query } }] } : {}),
     ...(category ? { category } : {}),
     ...(productTypes?.length ? { productType: { in: productTypes } } : {}),
     ...(genders?.length ? { gender: { in: genders } } : {}),
     ...(sports?.length ? { sport: { in: sports } } : {}),
     ...(brands?.length ? { brand: { in: brands } } : {}),
-    ...(shopSlug ? { shop: { slug: shopSlug } } : {}),
+    // shopSlug scopes a whole page to one merchant (/shop/[slug]); shopSlugs is the
+    // buyer-facing merchant filter. They have to fold into a single `shop` key — two
+    // spreads would silently overwrite each other.
+    ...shopCondition(shopSlug, shopSlugs),
     ...(minPriceCents != null || maxPriceCents != null
       ? {
           priceCents: {
@@ -40,6 +52,18 @@ export function productListWhere(filters: ProductListFilters): Prisma.ProductWhe
         }
       : {}),
   }
+}
+
+function shopCondition(shopSlug?: string, shopSlugs?: string[]): Prisma.ProductWhereInput {
+  const slugs = shopSlugs?.length ? shopSlugs : undefined
+  if (shopSlug && slugs) {
+    // A merchant filter inside a single-merchant page can only ever narrow to that page's
+    // own merchant, or to nothing at all.
+    return slugs.includes(shopSlug) ? { shop: { slug: shopSlug } } : { id: -1 }
+  }
+  if (shopSlug) return { shop: { slug: shopSlug } }
+  if (slugs) return { shop: { slug: { in: slugs } } }
+  return {}
 }
 
 // Joined with "|" rather than "," because some values contain a literal comma

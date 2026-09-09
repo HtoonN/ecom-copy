@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button, Card, Dialog, EmptyState, Select } from '@/UI'
 import { detectAffiliateMarketplace } from '@/lib/affiliate-marketplace'
@@ -50,8 +51,7 @@ const affiliateDestinations = (product: Product) =>
       (destination): destination is { marketplace: 'Shopee' | 'Lazada'; url: string } =>
         destination.marketplace !== null,
     )
-const productSku = (product: Product) =>
-  product.sku || `NS-${String(product.id).padStart(5, '0')}`
+const productSku = (product: Product) => product.sku || `NS-${String(product.id).padStart(5, '0')}`
 const readSearchParam = (key: string): string => {
   if (typeof window === 'undefined') return ''
   return new URLSearchParams(window.location.search).get(key) || ''
@@ -93,10 +93,32 @@ function matchesBilingual(
   if (!value) return false
   return bilingualPair(label, options).includes(value)
 }
+const ELLIPSIS = '…'
+const range = (start: number, end: number): number[] =>
+  Array.from({ length: end - start + 1 }, (_, index) => start + index)
+// Caps the number of rendered page buttons so a large catalog never spills a
+// full 1..N run of pages into the pagination bar and breaks the layout.
+function paginationItems(current: number, total: number, siblingCount = 1): (number | typeof ELLIPSIS)[] {
+  const totalVisible = siblingCount * 2 + 5
+  if (totalVisible >= total) return range(1, total)
+
+  const leftSibling = Math.max(current - siblingCount, 1)
+  const rightSibling = Math.min(current + siblingCount, total)
+  const showLeftDots = leftSibling > 2
+  const showRightDots = rightSibling < total - 1
+
+  if (!showLeftDots && showRightDots) {
+    return [...range(1, 3 + siblingCount * 2), ELLIPSIS, total]
+  }
+  if (showLeftDots && !showRightDots) {
+    return [1, ELLIPSIS, ...range(total - (3 + siblingCount * 2) + 1, total)]
+  }
+  return [1, ELLIPSIS, ...range(leftSibling, rightSibling), ELLIPSIS, total]
+}
 
 export default function Storefront({
   initialProducts,
-  brands = [],
+  merchants = [],
   sports = [],
   productTypes = [],
   shopSlug,
@@ -107,7 +129,7 @@ export default function Storefront({
   initialQuery = '',
 }: {
   initialProducts: Product[]
-  brands?: { nameEn: string; nameTh: string }[]
+  merchants?: { name: string; slug: string }[]
   sports?: { nameEn: string; nameTh: string }[]
   productTypes?: { nameEn: string; nameTh: string }[]
   shopSlug?: string
@@ -117,7 +139,7 @@ export default function Storefront({
   showHeader?: boolean
   initialQuery?: string
 }) {
-  const PAGE_SIZE = 10
+  const PAGE_SIZE_OPTIONS = [20, 60, 100]
   const lang = useLanguageSync()
   const productTypeButtons = [
     { key: ALL_SENTINEL, display: t('allProductType') },
@@ -136,7 +158,9 @@ export default function Storefront({
   const [query, setQuery] = useState(initialQuery)
   const [genders, setGenders] = useState<string[]>(() => readSearchParamList('gender'))
   const [sportsSelected, setSportsSelected] = useState<string[]>(() => readSearchParamList('sport'))
-  const [brandsSelected, setBrandsSelected] = useState<string[]>(() => readSearchParamList('brand'))
+  const [merchantsSelected, setMerchantsSelected] = useState<string[]>(() =>
+    readSearchParamList('merchant'),
+  )
   const [minPriceInput, setMinPriceInput] = useState(() => readSearchParam('minPrice'))
   const [maxPriceInput, setMaxPriceInput] = useState(() => readSearchParam('maxPrice'))
   const [appliedMinPrice, setAppliedMinPrice] = useState<number | null>(() => {
@@ -158,6 +182,7 @@ export default function Storefront({
   const [productsLoading, setProductsLoading] = useState(false)
   const [facetLoading, setFacetLoading] = useState(false)
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
   const [sortOrder, setSortOrder] = useState<'price-asc' | 'price-desc' | 'most-viewed'>(
     'price-asc',
   )
@@ -171,7 +196,17 @@ export default function Storefront({
   }, [])
   useEffect(
     () => setPage(1),
-    [productType, query, genders, sportsSelected, brandsSelected, appliedMinPrice, appliedMaxPrice, sortOrder],
+    [
+      productType,
+      query,
+      genders,
+      sportsSelected,
+      merchantsSelected,
+      appliedMinPrice,
+      appliedMaxPrice,
+      sortOrder,
+      pageSize,
+    ],
   )
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [galleryIndex, setGalleryIndex] = useState(0)
@@ -180,7 +215,8 @@ export default function Storefront({
     query.trim() !== '' ||
     appliedMinPrice != null ||
     appliedMaxPrice != null
-  const hasSiblingFilters = genders.length > 0 || sportsSelected.length > 0 || brandsSelected.length > 0
+  const hasSiblingFilters =
+    genders.length > 0 || sportsSelected.length > 0 || merchantsSelected.length > 0
   const listAbortRef = useRef<AbortController | null>(null)
   const facetAbortRef = useRef<AbortController | null>(null)
 
@@ -194,7 +230,7 @@ export default function Storefront({
       }
       if (genders.length) params.set('gender', encodeCsvParam(genders))
       if (sportsSelected.length) params.set('sport', encodeCsvParam(sportsSelected))
-      if (brandsSelected.length) params.set('brand', encodeCsvParam(brandsSelected))
+      if (merchantsSelected.length) params.set('merchant', encodeCsvParam(merchantsSelected))
       if (appliedMinPrice != null) params.set('minPrice', String(appliedMinPrice))
       if (appliedMaxPrice != null) params.set('maxPrice', String(appliedMaxPrice))
 
@@ -204,7 +240,7 @@ export default function Storefront({
 
       listAbortRef.current?.abort()
       if (!hasSiblingFilters) {
-        // No gender/sport/brand narrowing active — the facet-base fetch below already
+        // No gender/sport/merchant narrowing active — the facet-base fetch below already
         // has the exact same result set, so skip this redundant network round trip.
         setFetchedProducts(null)
         setProductsLoading(false)
@@ -234,13 +270,13 @@ export default function Storefront({
     query,
     genders,
     sportsSelected,
-    brandsSelected,
+    merchantsSelected,
     appliedMinPrice,
     appliedMaxPrice,
     shopSlug,
   ])
 
-  // Facet-base list (product type + search only, ignoring gender/sport/brand) — this is what
+  // Facet-base list (product type + search only, ignoring gender/sport/merchant) — this is what
   // facet counts must be computed from so they never drift from what's actually in the DB
   // (initialProducts is a one-time page-load snapshot and goes stale as products change).
   useEffect(() => {
@@ -299,16 +335,17 @@ export default function Storefront({
         (product) =>
           (!genders.length || genders.some((value) => product.gender === value)) &&
           (!sportsSelected.length || sportsSelected.some((value) => product.sport === value)) &&
-          (!brandsSelected.length || brandsSelected.some((value) => product.brand === value)),
+          (!merchantsSelected.length ||
+            merchantsSelected.some((value) => product.shop.slug === value)),
       )
     const sorted = [...source]
     if (sortOrder === 'price-asc') sorted.sort((a, b) => a.priceCents - b.priceCents)
     else if (sortOrder === 'price-desc') sorted.sort((a, b) => b.priceCents - a.priceCents)
     else if (sortOrder === 'most-viewed') sorted.sort((a, b) => b._count.views - a._count.views)
     return sorted
-  }, [fetchedProducts, facetBaseProducts, genders, sportsSelected, brandsSelected, sortOrder])
-  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE))
-  const pagedProducts = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  }, [fetchedProducts, facetBaseProducts, genders, sportsSelected, merchantsSelected, sortOrder])
+  const totalPages = Math.max(1, Math.ceil(products.length / pageSize))
+  const pagedProducts = products.slice((page - 1) * pageSize, page * pageSize)
   const genderFacets = useMemo(
     () =>
       GENDER_OPTIONS.map((option) => ({
@@ -319,15 +356,18 @@ export default function Storefront({
       })),
     [facetBaseProducts, lang],
   )
-  const brandFacets = useMemo(
+  // Merchants with nothing in the current result set are dropped rather than listed at
+  // zero: the roster grows with every onboarded shop, and a wall of empty rows is noise.
+  const merchantFacets = useMemo(
     () =>
-      brands.map((option) => ({
-        label: option.nameEn,
-        count: facetBaseProducts.filter(
-          (p) => p.brand === option.nameEn || p.brand === option.nameTh,
-        ).length,
-      })),
-    [brands, facetBaseProducts],
+      merchants
+        .map((option) => ({
+          label: option.name,
+          value: option.slug,
+          count: facetBaseProducts.filter((p) => p.shop.slug === option.slug).length,
+        }))
+        .filter((facet) => facet.count > 0 || merchantsSelected.includes(facet.value)),
+    [merchants, facetBaseProducts, merchantsSelected],
   )
   const sportFacets = useMemo(
     () =>
@@ -420,7 +460,7 @@ export default function Storefront({
     </div>
   )
 
-  const pagination = products.length > PAGE_SIZE && (
+  const pagination = products.length > pageSize && (
     <nav className="buyer-pagination" aria-label={t('paginationLabel')}>
       <button
         type="button"
@@ -431,18 +471,24 @@ export default function Storefront({
       >
         <ChevronLeftIcon aria-hidden="true" />
       </button>
-      {Array.from({ length: totalPages }, (_, index) => index + 1).map((number) => (
-        <button
-          key={number}
-          type="button"
-          className="buyer-pagination-page"
-          aria-current={number === page ? 'page' : undefined}
-          aria-label={t('paginationPage', { page: number })}
-          onClick={() => setPage(number)}
-        >
-          {number}
-        </button>
-      ))}
+      {paginationItems(page, totalPages, 3).map((item, index) =>
+        item === ELLIPSIS ? (
+          <span key={`ellipsis-${index}`} className="buyer-pagination-ellipsis" aria-hidden="true">
+            {ELLIPSIS}
+          </span>
+        ) : (
+          <button
+            key={item}
+            type="button"
+            className="buyer-pagination-page"
+            aria-current={item === page ? 'page' : undefined}
+            aria-label={t('paginationPage', { page: item })}
+            onClick={() => setPage(item)}
+          >
+            {item}
+          </button>
+        ),
+      )}
       <button
         type="button"
         className="buyer-pagination-next"
@@ -474,7 +520,19 @@ export default function Storefront({
             </div>
           </div>
         )}
-        <h2 className="buyer-filters-title">{t('chooseShopHeading')}</h2>
+        <div className="buyer-filters-title-row">
+          <h2 className="buyer-filters-title">{t('chooseShopHeading')}</h2>
+          <div className="buyer-results-sort buyer-page-size">
+            <span>{t('itemsPerPage')}</span>
+            <Select
+              label=""
+              aria-label={t('itemsPerPage')}
+              value={String(pageSize)}
+              onChange={(event) => setPageSize(Number(event.target.value))}
+              options={PAGE_SIZE_OPTIONS.map((size) => ({ value: String(size), label: String(size) }))}
+            />
+          </div>
+        </div>
         <div className="buyer-filters" aria-label={t('allCategories')}>
           {productTypeButtons.map(({ key, display }) => (
             <Button
@@ -503,12 +561,20 @@ export default function Storefront({
                 selected={sportsSelected}
                 onToggle={(label) => toggleBilingualFacet(label, setSportsSelected, sports)}
               />
-              <FilterGroup
-                title={t('filterBrand')}
-                items={brandFacets}
-                selected={brandsSelected}
-                onToggle={(label) => toggleBilingualFacet(label, setBrandsSelected, brands)}
-              />
+              {merchantFacets.length > 0 && (
+                <FilterGroup
+                  title={t('filterMerchant')}
+                  items={merchantFacets}
+                  selected={merchantsSelected}
+                  onToggle={(slug) =>
+                    setMerchantsSelected((current) =>
+                      current.includes(slug)
+                        ? current.filter((entry) => entry !== slug)
+                        : [...current, slug],
+                    )
+                  }
+                />
+              )}
               <PriceFilterGroup
                 minValue={minPriceInput}
                 maxValue={maxPriceInput}
@@ -535,9 +601,7 @@ export default function Storefront({
                     label=""
                     aria-label={t('sortBy')}
                     value={sortOrder}
-                    onChange={(event) =>
-                      setSortOrder(event.target.value as typeof sortOrder)
-                    }
+                    onChange={(event) => setSortOrder(event.target.value as typeof sortOrder)}
                     options={[
                       { value: 'price-asc', label: t('sortPriceAsc') },
                       { value: 'price-desc', label: t('sortPriceDesc') },
@@ -618,9 +682,12 @@ export default function Storefront({
             </div>
             <div className="buyer-product-dialog-content">
               <div className="buyer-product-dialog-identity">
-                <span className="buyer-product-dialog-brand">
-                  {selectedProduct.brand || selectedProduct.shop.name}
-                </span>
+                <Link
+                  className="buyer-product-dialog-merchant"
+                  href={`/shop/${selectedProduct.shop.slug}`}
+                >
+                  {selectedProduct.shop.name}
+                </Link>
                 <span className="buyer-product-dialog-sku">
                   {t('skuLabel')} {productSku(selectedProduct)}
                 </span>
@@ -651,7 +718,9 @@ export default function Storefront({
                         variant="primary"
                         size="compact"
                         className="buyer-product-marketplace-buy"
-                        onClick={() => window.open(destination.url, '_blank', 'noopener,noreferrer')}
+                        onClick={() =>
+                          window.open(destination.url, '_blank', 'noopener,noreferrer')
+                        }
                       >
                         {t('buyNow')}
                       </Button>
@@ -675,18 +744,6 @@ export default function Storefront({
   )
 }
 
-function useDefaultFiltersOpen() {
-  const [open, setOpen] = useState(true)
-  useEffect(() => {
-    const mql = window.matchMedia('(max-width: 50rem)')
-    setOpen(!mql.matches)
-    const handler = (event: MediaQueryListEvent) => setOpen(!event.matches)
-    mql.addEventListener('change', handler)
-    return () => mql.removeEventListener('change', handler)
-  }, [])
-  return open
-}
-
 function FilterGroup({
   title,
   items,
@@ -694,25 +751,26 @@ function FilterGroup({
   onToggle,
 }: {
   title: string
-  items: { label: string; count: number }[]
+  // `value` is what selection is keyed on when it differs from the label — merchants
+  // are selected by slug but shown by name.
+  items: { label: string; count: number; value?: string }[]
   selected: string[]
-  onToggle: (label: string) => void
+  onToggle: (value: string) => void
 }) {
-  const defaultOpen = useDefaultFiltersOpen()
   return (
-    <details className="buyer-filter-group" open={defaultOpen}>
+    <details className="buyer-filter-group">
       <summary className="buyer-filter-group-header">
         {title}
         <ChevronDownIcon className="buyer-filter-chevron" aria-hidden="true" />
       </summary>
       <div className="buyer-filter-group-body">
         {items.map((item) => (
-          <label className="buyer-filter-row" key={item.label}>
+          <label className="buyer-filter-row" key={item.value ?? item.label}>
             <span className="buyer-filter-row-main">
               <input
                 type="checkbox"
-                checked={selected.includes(item.label)}
-                onChange={() => onToggle(item.label)}
+                checked={selected.includes(item.value ?? item.label)}
+                onChange={() => onToggle(item.value ?? item.label)}
               />
               {item.label}
             </span>
@@ -737,9 +795,8 @@ function PriceFilterGroup({
   onMaxChange: (value: string) => void
   onApply: () => void
 }) {
-  const defaultOpen = useDefaultFiltersOpen()
   return (
-    <details className="buyer-filter-group" open={defaultOpen}>
+    <details className="buyer-filter-group">
       <summary className="buyer-filter-group-header">
         {t('filterPrice')}
         <ChevronDownIcon className="buyer-filter-chevron" aria-hidden="true" />

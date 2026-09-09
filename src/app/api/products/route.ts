@@ -17,6 +17,7 @@ export async function GET(request: Request) {
   const sports = parseCsvParam(url.searchParams.get('sport'))
   const brands = parseCsvParam(url.searchParams.get('brand'))
   const shopSlug = url.searchParams.get('shop') || ''
+  const shopSlugs = parseCsvParam(url.searchParams.get('merchant'))
   const minPriceCents = parsePriceCents(url.searchParams.get('minPrice'))
   const maxPriceCents = parsePriceCents(url.searchParams.get('maxPrice'))
   const products = await prisma.product.findMany({
@@ -28,6 +29,7 @@ export async function GET(request: Request) {
       sports,
       brands,
       shopSlug,
+      shopSlugs,
       minPriceCents,
       maxPriceCents,
     }),

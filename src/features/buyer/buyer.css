@@ -784,6 +784,16 @@
   font-weight: var(--ui-font-weight-semibold);
   text-transform: uppercase;
 }
+.buyer-filters-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-4);
+  margin: 0 0 var(--ui-space-4);
+}
+.buyer-filters-title-row .buyer-filters-title {
+  margin: 0;
+}
 .buyer-filters-title {
   margin: 0 0 var(--ui-space-4);
   font-size: var(--ui-font-size-lg);
@@ -1020,10 +1030,13 @@
 }
 .buyer-pagination {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: var(--ui-space-2);
-  margin-top: var(--ui-space-6);
+  margin-top: var(--ui-space-8);
+  padding-top: var(--ui-space-6);
+  border-top: var(--ui-border-width) solid var(--ui-color-border);
 }
 .buyer-pagination-page,
 .buyer-pagination-prev,
@@ -1039,6 +1052,15 @@
   font-size: var(--ui-font-size-sm);
   font-weight: var(--ui-font-weight-semibold);
   cursor: pointer;
+}
+.buyer-pagination-ellipsis {
+  width: var(--ui-space-8);
+  height: var(--ui-space-8);
+  display: grid;
+  place-items: center;
+  color: var(--ui-color-text-secondary);
+  font-size: var(--ui-font-size-sm);
+  font-weight: var(--ui-font-weight-semibold);
 }
 .buyer-pagination-page[aria-current='page'] {
   border-color: var(--ui-color-text-primary);
@@ -1383,11 +1405,24 @@
   font-size: var(--ui-font-size-sm);
 }
 
-.buyer-product-dialog-brand {
-  color: var(--ui-color-brand-primary);
+.buyer-product-dialog-merchant {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-round);
+  background: var(--ui-color-surface-soft);
+  color: var(--ui-color-text-primary);
   font-weight: var(--ui-font-weight-bold);
-  text-transform: uppercase;
+  font-size: var(--ui-font-size-xs);
   letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.buyer-product-dialog-merchant:hover,
+.buyer-product-dialog-merchant:focus-visible {
+  border-color: var(--ui-color-text-primary);
 }
 
 .buyer-product-dialog-sku {
@@ -1621,6 +1656,11 @@
   }
   .buyer-container {
     width: calc(100% - var(--ui-space-6));
+  }
+  .buyer-filters-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--ui-space-2);
   }
   .buyer-catalog-header {
     align-items: stretch;
