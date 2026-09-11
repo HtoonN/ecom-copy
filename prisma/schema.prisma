@@ -136,6 +136,8 @@ model Product {
   active Boolean @default(true)
   orderItems OrderItem[]
   views ProductView[]
+  clickOuts ProductClickOut[]
+  bundleItems BundleItem[]
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   @@index([shopId])
@@ -150,6 +152,69 @@ model ProductView {
 
   @@index([productId, viewedAt])
   @@map("market_product_views")
+}
+
+model ProductClickOut {
+  id Int @id @default(autoincrement())
+  productId Int @map("product_id")
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  marketplace String?
+  clickedAt DateTime @default(now()) @map("clicked_at")
+
+  @@index([productId, clickedAt])
+  @@map("market_product_clickouts")
+}
+
+model SearchInterpretation {
+  id Int @id @default(autoincrement())
+  query String @unique
+  filters Json
+  hits Int @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("market_search_interpretations")
+}
+
+model ProductComparison {
+  id Int @id @default(autoincrement())
+  key String @unique
+  payload Json
+  hits Int @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("market_product_comparisons")
+}
+
+model Bundle {
+  id Int @id @default(autoincrement())
+  slug String @unique
+  title String
+  sport String
+  budgetCents Int @map("budget_cents")
+  totalCents Int @map("total_cents")
+  source String
+  active Boolean @default(true)
+  items BundleItem[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("market_bundles")
+}
+
+model BundleItem {
+  id Int @id @default(autoincrement())
+  bundleId Int @map("bundle_id")
+  bundle Bundle @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  productId Int @map("product_id")
+  product Product @relation(fields: [productId], references: [id])
+  role String
+  sortOrder Int @map("sort_order")
+  unitPriceCents Int @map("unit_price_cents")
+
+  @@index([bundleId])
+  @@map("market_bundle_items")
 }
 
 model Address {

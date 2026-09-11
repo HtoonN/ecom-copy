@@ -23,6 +23,7 @@
     "db:seed": "node --require=./scripts/load-env.cjs node_modules/tsx/dist/cli.mjs prisma/seed.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
     "@heroicons/react": "^2.2.0",
     "@prisma/adapter-mariadb": "^7.9.0",
     "@prisma/client": "^7.9.0",

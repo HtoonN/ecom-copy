@@ -11,42 +11,14 @@
 // dialog, same behaviour — only the depth of the reading changes.
 
 import { z } from 'zod'
+import type { Bilingual, CompareProduct, Comparison, ComparisonRow } from './compare-types'
 import type { Facet, Facets } from './facets'
 import { parseJson } from './llm'
 
-export type CompareProduct = {
-  id: number
-  name: string
-  description: string
-  brand: string | null
-  sport: string | null
-  gender: string | null
-  productType: string | null
-  priceCents: number
-  shopName: string
-}
+export type { CompareProduct, Bilingual, ComparisonRow, Comparison }
+export { MAX_COMPARE, comparisonKey } from './compare-types'
 
-// Every customer-facing string carries both languages. The model is asked for
-// both rather than for English we would have to translate at display time —
-// the page can switch language without a second call.
-export type Bilingual = { en: string; th: string }
-
-export type ComparisonRow = { label: Bilingual; cells: Bilingual[] }
-
-export type Comparison = {
-  // Rows are aligned to the product order the caller passed in: cells[i]
-  // belongs to products[i], always, including when the answer is "not stated".
-  rows: ComparisonRow[]
-  verdicts: { productId: number; text: Bilingual }[]
-}
-
-export const MAX_COMPARE = 3
 const BLANK: Bilingual = { en: '—', th: '—' }
-
-// The same pair compared in either order is the same question.
-export function comparisonKey(productIds: number[]): string {
-  return [...new Set(productIds)].sort((a, b) => a - b).join(':')
-}
 
 // Titles and descriptions are usually the same string in this catalogue, so
 // searching the pair as one text is enough — and avoids matching twice.

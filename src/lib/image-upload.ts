@@ -4,7 +4,7 @@
 // src/lib/image-providers/ implementing ImageUploadProvider and change the
 // one import below. No other file needs to change.
 
-import { s3Provider } from './image-providers/s3'
+import { cloudinaryProvider } from './image-providers/cloudinary'
 
 export type UploadedImage = { url: string; publicId: string }
 
@@ -14,7 +14,7 @@ export type ImageUploadProvider = {
   publicIdFromUrl(url: string): string | null
 }
 
-const provider: ImageUploadProvider = s3Provider
+const provider: ImageUploadProvider = cloudinaryProvider
 
 export function uploadImage(dataUri: string, folder: string): Promise<UploadedImage> {
   return provider.upload(dataUri, folder)
