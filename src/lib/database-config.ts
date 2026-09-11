@@ -17,7 +17,7 @@ export function databaseConfig(): DatabaseConfig {
   const databaseUrl = process.env.DATABASE_URL
   if (!databaseUrl) {
     throw new Error(
-      'DATABASE_URL is not set. This project connects to Aiven MySQL only — set DATABASE_URL in .env ' +
+      'DATABASE_URL is not set. Set it in .env for local dev, or in the environment when hosted ' +
         '(see .env.example).',
     )
   }
@@ -45,8 +45,8 @@ export function databaseConfig(): DatabaseConfig {
   if (VERIFIED_SSL_MODES.has(sslMode) && !ca) {
     throw new Error(
       `DATABASE_URL requests ssl-mode=${sslMode}, but no CA certificate was found. Set DATABASE_SSL_CA ` +
-        '(the certificate contents — required on serverless hosts like Vercel) or DATABASE_SSL_CA_PATH ' +
-        '(a local file path — dev only) to the Aiven CA certificate.',
+        "(the certificate contents — required on hosts where you can't mount a file) or " +
+        "DATABASE_SSL_CA_PATH (a local file path — dev only) to your database provider's CA certificate.",
     )
   }
 

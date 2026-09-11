@@ -59,6 +59,11 @@ export const ModelName = {
   Brand: 'Brand',
   Product: 'Product',
   ProductView: 'ProductView',
+  SearchInterpretation: 'SearchInterpretation',
+  ProductComparison: 'ProductComparison',
+  Bundle: 'Bundle',
+  BundleItem: 'BundleItem',
+  ProductClickOut: 'ProductClickOut',
   Address: 'Address',
   Order: 'Order',
   OrderItem: 'OrderItem',
@@ -189,6 +194,68 @@ export const ProductViewScalarFieldEnum = {
 } as const
 
 export type ProductViewScalarFieldEnum = (typeof ProductViewScalarFieldEnum)[keyof typeof ProductViewScalarFieldEnum]
+
+
+export const SearchInterpretationScalarFieldEnum = {
+  id: 'id',
+  query: 'query',
+  filters: 'filters',
+  hits: 'hits',
+  lastResultCount: 'lastResultCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SearchInterpretationScalarFieldEnum = (typeof SearchInterpretationScalarFieldEnum)[keyof typeof SearchInterpretationScalarFieldEnum]
+
+
+export const ProductComparisonScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  payload: 'payload',
+  hits: 'hits',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductComparisonScalarFieldEnum = (typeof ProductComparisonScalarFieldEnum)[keyof typeof ProductComparisonScalarFieldEnum]
+
+
+export const BundleScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  sport: 'sport',
+  budgetCents: 'budgetCents',
+  totalCents: 'totalCents',
+  active: 'active',
+  source: 'source',
+  generatedAt: 'generatedAt'
+} as const
+
+export type BundleScalarFieldEnum = (typeof BundleScalarFieldEnum)[keyof typeof BundleScalarFieldEnum]
+
+
+export const BundleItemScalarFieldEnum = {
+  id: 'id',
+  bundleId: 'bundleId',
+  productId: 'productId',
+  role: 'role',
+  sortOrder: 'sortOrder',
+  unitPriceCents: 'unitPriceCents'
+} as const
+
+export type BundleItemScalarFieldEnum = (typeof BundleItemScalarFieldEnum)[keyof typeof BundleItemScalarFieldEnum]
+
+
+export const ProductClickOutScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  marketplace: 'marketplace',
+  clickedAt: 'clickedAt'
+} as const
+
+export type ProductClickOutScalarFieldEnum = (typeof ProductClickOutScalarFieldEnum)[keyof typeof ProductClickOutScalarFieldEnum]
 
 
 export const AddressScalarFieldEnum = {
@@ -385,6 +452,44 @@ export const ProductOrderByRelevanceFieldEnum = {
 } as const
 
 export type ProductOrderByRelevanceFieldEnum = (typeof ProductOrderByRelevanceFieldEnum)[keyof typeof ProductOrderByRelevanceFieldEnum]
+
+
+export const SearchInterpretationOrderByRelevanceFieldEnum = {
+  query: 'query'
+} as const
+
+export type SearchInterpretationOrderByRelevanceFieldEnum = (typeof SearchInterpretationOrderByRelevanceFieldEnum)[keyof typeof SearchInterpretationOrderByRelevanceFieldEnum]
+
+
+export const ProductComparisonOrderByRelevanceFieldEnum = {
+  key: 'key'
+} as const
+
+export type ProductComparisonOrderByRelevanceFieldEnum = (typeof ProductComparisonOrderByRelevanceFieldEnum)[keyof typeof ProductComparisonOrderByRelevanceFieldEnum]
+
+
+export const BundleOrderByRelevanceFieldEnum = {
+  slug: 'slug',
+  title: 'title',
+  sport: 'sport',
+  source: 'source'
+} as const
+
+export type BundleOrderByRelevanceFieldEnum = (typeof BundleOrderByRelevanceFieldEnum)[keyof typeof BundleOrderByRelevanceFieldEnum]
+
+
+export const BundleItemOrderByRelevanceFieldEnum = {
+  role: 'role'
+} as const
+
+export type BundleItemOrderByRelevanceFieldEnum = (typeof BundleItemOrderByRelevanceFieldEnum)[keyof typeof BundleItemOrderByRelevanceFieldEnum]
+
+
+export const ProductClickOutOrderByRelevanceFieldEnum = {
+  marketplace: 'marketplace'
+} as const
+
+export type ProductClickOutOrderByRelevanceFieldEnum = (typeof ProductClickOutOrderByRelevanceFieldEnum)[keyof typeof ProductClickOutOrderByRelevanceFieldEnum]
 
 
 export const AddressOrderByRelevanceFieldEnum = {

@@ -136,6 +136,12 @@ a {
   color: var(--muted);
   flex: 0 0 auto;
 }
+.header-search .header-search-ai {
+  width: 16px;
+  height: 16px;
+  color: var(--brand-red);
+  flex: 0 0 auto;
+}
 .header-search-label {
   position: absolute;
   width: 1px;

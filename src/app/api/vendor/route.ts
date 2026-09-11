@@ -15,7 +15,9 @@ function requestedListingMode(value: unknown, fallback: ListingMode = ListingMod
 }
 
 function existingAffiliateUrls(value: unknown) {
-  const urls = Array.isArray(value) ? value.filter((url): url is string => typeof url === 'string') : []
+  const urls = Array.isArray(value)
+    ? value.filter((url): url is string => typeof url === 'string')
+    : []
   return {
     shopeeAffiliateUrl: urls.find((url) => detectAffiliateMarketplace(url) === 'Shopee') || null,
     lazadaAffiliateUrl: urls.find((url) => detectAffiliateMarketplace(url) === 'Lazada') || null,
@@ -27,7 +29,8 @@ function affiliateLinks(
   body: Record<string, unknown>,
   fallback?: { shopeeAffiliateUrl: string | null; lazadaAffiliateUrl: string | null },
 ) {
-  if (mode === ListingMode.NATIVE) return { listingMode: ListingMode.NATIVE, affiliateUrl: [] as string[] }
+  if (mode === ListingMode.NATIVE)
+    return { listingMode: ListingMode.NATIVE, affiliateUrl: [] as string[] }
 
   const shopeeValue = productField(
     Object.hasOwn(body, 'shopeeAffiliateUrl')
@@ -95,7 +98,7 @@ async function uploadImages(payloads: ImagePayload[], folder: string): Promise<s
   return uploads.map((upload) => upload.url)
 }
 
-// Best-effort cleanup of our own Cloudinary-hosted images that are no longer
+// Best-effort cleanup of our own provider-hosted images that are no longer
 // referenced (external affiliate URLs are silently skipped by publicIdFromUrl).
 async function deleteRemovedImages(urls: string[]) {
   for (const url of urls) {
@@ -135,7 +138,7 @@ export async function GET(request: Request) {
     include: {
       products: {
         orderBy: { createdAt: 'desc' },
-        include: { _count: { select: { views: true } } },
+        include: { _count: { select: { views: true, clickOuts: true } } },
       },
       coupons: { orderBy: { createdAt: 'desc' } },
     },
@@ -323,7 +326,7 @@ export async function POST(request: Request) {
     try {
       uploadedUrls = await uploadImages(uploadedPayloads, `matchday/products/${shop.id}`)
     } catch (error) {
-      console.error('Cloudinary upload failed', error)
+      console.error('Image upload failed', error)
       return fail('Could not upload product images. Please try again.', 502)
     }
     const slug = productSlug(name)
@@ -400,7 +403,7 @@ export async function POST(request: Request) {
     try {
       uploadedUrls = await uploadImages(uploadedPayloads, `matchday/products/${shop.id}`)
     } catch (error) {
-      console.error('Cloudinary upload failed', error)
+      console.error('Image upload failed', error)
       return fail('Could not upload product images. Please try again.', 502)
     }
     const imageUrls = [...baseImages, ...uploadedUrls]
@@ -438,7 +441,9 @@ export async function POST(request: Request) {
     }
     await prisma.product.delete({ where: { id: product.id } })
     const imageUrls = Array.isArray(product.imageUrls)
-      ? (product.imageUrls as unknown[]).filter((image): image is string => typeof image === 'string')
+      ? (product.imageUrls as unknown[]).filter(
+          (image): image is string => typeof image === 'string',
+        )
       : []
     await deleteRemovedImages(imageUrls)
     return NextResponse.json({ ok: true, archived: false, message: 'Product deleted permanently.' })
@@ -504,7 +509,7 @@ export async function POST(request: Request) {
       try {
         ;[logoUrl] = await uploadImages([logoPayload], `matchday/shops/${shop.id}`)
       } catch (error) {
-        console.error('Cloudinary upload failed', error)
+        console.error('Image upload failed', error)
         return fail('Could not upload shop logo. Please try again.', 502)
       }
     }

@@ -1,12 +1,17 @@
 'use client'
 
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Button, Card, Dialog, EmptyState, Select } from '@/UI'
+import { Button, Card, Checkbox, Dialog, EmptyState, Select } from '@/UI'
 import { detectAffiliateMarketplace } from '@/lib/affiliate-marketplace'
+import { MAX_COMPARE } from '@/lib/compare'
+import { cleanProductName } from '@/lib/product-name'
 import { t, useLanguageSync } from '../locales'
+import { recordProductClickOut } from '../record-product-clickout'
 import { recordProductView } from '../record-product-view'
+import AiMark from './AiMark'
+import CompareBar, { type CompareCandidate } from './CompareBar'
 import '../buyer.css'
 
 type Product = {
@@ -28,6 +33,20 @@ type Product = {
 }
 
 const ALL_SENTINEL = '__ALL__'
+// Catches products whose productType is empty or doesn't match any registered
+// type — e.g. a stray value left over from before the taxonomy was cleaned up.
+// Without this bucket those products are invisible under every specific tab.
+const OTHER_SENTINEL = '__OTHER__'
+
+type InterpretedSearch = {
+  productType?: string | null
+  sport?: string | null
+  brand?: string | null
+  genders?: string[]
+  minPrice?: number | null
+  maxPrice?: number | null
+  text?: string | null
+}
 
 function displayLabel(option: { nameEn: string; nameTh: string }, lang: string): string {
   return lang === 'en' ? option.nameEn : option.nameTh
@@ -43,6 +62,14 @@ const GENDER_OPTIONS: { nameEn: string; nameTh: string }[] = [
 ]
 const money = (cents: number) =>
   new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(cents / 100)
+// Prices in the reading chips are bounds the customer typed, not exact amounts —
+// "≤ ฿3,000.00" reads as false precision for a number they said as "สามพัน".
+const moneyRounded = (cents: number) =>
+  new Intl.NumberFormat('th-TH', {
+    style: 'currency',
+    currency: 'THB',
+    maximumFractionDigits: 0,
+  }).format(cents / 100)
 const productImages = (product: Product) => product.imageUrls.slice(0, 4)
 const affiliateDestinations = (product: Product) =>
   product.affiliateUrl
@@ -93,28 +120,16 @@ function matchesBilingual(
   if (!value) return false
   return bilingualPair(label, options).includes(value)
 }
-const ELLIPSIS = '…'
-const range = (start: number, end: number): number[] =>
-  Array.from({ length: end - start + 1 }, (_, index) => start + index)
-// Caps the number of rendered page buttons so a large catalog never spills a
-// full 1..N run of pages into the pagination bar and breaks the layout.
-function paginationItems(current: number, total: number, siblingCount = 1): (number | typeof ELLIPSIS)[] {
-  const totalVisible = siblingCount * 2 + 5
-  if (totalVisible >= total) return range(1, total)
-
-  const leftSibling = Math.max(current - siblingCount, 1)
-  const rightSibling = Math.min(current + siblingCount, total)
-  const showLeftDots = leftSibling > 2
-  const showRightDots = rightSibling < total - 1
-
-  if (!showLeftDots && showRightDots) {
-    return [...range(1, 3 + siblingCount * 2), ELLIPSIS, total]
-  }
-  if (showLeftDots && !showRightDots) {
-    return [1, ELLIPSIS, ...range(total - (3 + siblingCount * 2) + 1, total)]
-  }
-  return [1, ELLIPSIS, ...range(leftSibling, rightSibling), ELLIPSIS, total]
+function isOtherProductType(
+  value: string | null,
+  options: { nameEn: string; nameTh: string }[],
+): boolean {
+  if (!value) return true
+  return !options.some((option) => option.nameEn === value || option.nameTh === value)
 }
+// How many products each scroll step reveals. The grid renders a growing
+// prefix of the filtered list; the API already returns the full match set.
+const BATCH_SIZE = 20
 
 export default function Storefront({
   initialProducts,
@@ -139,11 +154,11 @@ export default function Storefront({
   showHeader?: boolean
   initialQuery?: string
 }) {
-  const PAGE_SIZE_OPTIONS = [20, 60, 100]
   const lang = useLanguageSync()
   const productTypeButtons = [
     { key: ALL_SENTINEL, display: t('allProductType') },
     ...productTypes.map((option) => ({ key: option.nameEn, display: displayLabel(option, lang) })),
+    { key: OTHER_SENTINEL, display: t('otherProductType') },
   ]
   const [productType, setProductType] = useState(() => {
     const raw = readSearchParam('productType').split('|')[0]?.trim()
@@ -151,10 +166,34 @@ export default function Storefront({
     const match = productTypes.find((option) => option.nameEn === raw || option.nameTh === raw)
     return match?.nameEn || raw
   })
+  // Site-wide counts, independent of the currently selected category, so every
+  // button keeps showing what's actually in that category rather than collapsing
+  // to the count of whichever one is active.
+  const productTypeCounts = useMemo(() => {
+    const counts = new Map<string, number>()
+    counts.set(ALL_SENTINEL, initialProducts.length)
+    for (const option of productTypes) {
+      counts.set(
+        option.nameEn,
+        initialProducts.filter((product) =>
+          matchesBilingual(product.productType, option.nameEn, productTypes),
+        ).length,
+      )
+    }
+    counts.set(
+      OTHER_SENTINEL,
+      initialProducts.filter((product) => isOtherProductType(product.productType, productTypes))
+        .length,
+    )
+    return counts
+  }, [initialProducts, productTypes])
   const selectedProductTypeOption = productTypes.find((option) => option.nameEn === productType)
-  const productTypeDisplay = selectedProductTypeOption
-    ? displayLabel(selectedProductTypeOption, lang)
-    : productType
+  const productTypeDisplay =
+    productType === OTHER_SENTINEL
+      ? t('otherProductType')
+      : selectedProductTypeOption
+        ? displayLabel(selectedProductTypeOption, lang)
+        : productType
   const [query, setQuery] = useState(initialQuery)
   const [genders, setGenders] = useState<string[]>(() => readSearchParamList('gender'))
   const [sportsSelected, setSportsSelected] = useState<string[]>(() => readSearchParamList('sport'))
@@ -181,8 +220,7 @@ export default function Storefront({
   const [fetchedFacetBase, setFetchedFacetBase] = useState<Product[] | null>(null)
   const [productsLoading, setProductsLoading] = useState(false)
   const [facetLoading, setFacetLoading] = useState(false)
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
+  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE)
   const [sortOrder, setSortOrder] = useState<'price-asc' | 'price-desc' | 'most-viewed'>(
     'price-asc',
   )
@@ -194,8 +232,10 @@ export default function Storefront({
     window.addEventListener('northstar-search', handleSearch)
     return () => window.removeEventListener('northstar-search', handleSearch)
   }, [])
+  // Any change to the result set restarts the scroll from the first batch,
+  // otherwise a narrowed filter would keep rendering a stale deep prefix.
   useEffect(
-    () => setPage(1),
+    () => setVisibleCount(BATCH_SIZE),
     [
       productType,
       query,
@@ -205,11 +245,16 @@ export default function Storefront({
       appliedMinPrice,
       appliedMaxPrice,
       sortOrder,
-      pageSize,
     ],
   )
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [galleryIndex, setGalleryIndex] = useState(0)
+  // What the search phrase was understood to mean, and the residue of it that
+  // still has to be matched against product names.
+  const [interpreted, setInterpreted] = useState<InterpretedSearch | null>(null)
+  const [searchText, setSearchText] = useState(initialQuery)
+  const [interpreting, setInterpreting] = useState(false)
+  const [comparing, setComparing] = useState<CompareCandidate[]>([])
   const isFiltered =
     productType !== ALL_SENTINEL ||
     query.trim() !== '' ||
@@ -219,13 +264,74 @@ export default function Storefront({
     genders.length > 0 || sportsSelected.length > 0 || merchantsSelected.length > 0
   const listAbortRef = useRef<AbortController | null>(null)
   const facetAbortRef = useRef<AbortController | null>(null)
+  const loadMoreRef = useRef<HTMLButtonElement | null>(null)
+
+  function revealMore() {
+    setVisibleCount((current) => current + BATCH_SIZE)
+  }
+
+  // Read the search phrase into filters. Runs only when the phrase itself
+  // changes — adjusting a filter by hand must not re-interpret and overwrite the
+  // adjustment the customer just made.
+  useEffect(() => {
+    const phrase = query.trim()
+    if (!phrase) {
+      setInterpreted(null)
+      setSearchText('')
+      setInterpreting(false)
+      return
+    }
+    let cancelled = false
+    setInterpreting(true)
+    const handle = window.setTimeout(() => {
+      fetch('/api/search/interpret', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: phrase }),
+      })
+        .then((response) => (response.ok ? response.json() : null))
+        .then((payload: { filters?: InterpretedSearch } | null) => {
+          if (cancelled) return
+          const filters = payload?.filters
+          if (!filters) {
+            // Endpoint unreachable: search the phrase as written, which is what
+            // the box did before any of this existed.
+            setInterpreted(null)
+            setSearchText(phrase)
+            return
+          }
+          setInterpreted(filters)
+          setSearchText(filters.text ?? '')
+          setProductType(filters.productType ?? ALL_SENTINEL)
+          setSportsSelected(filters.sport ? [filters.sport] : [])
+          setGenders(filters.genders ?? [])
+          setAppliedMinPrice(filters.minPrice ?? null)
+          setAppliedMaxPrice(filters.maxPrice ?? null)
+          setMinPriceInput(filters.minPrice ? String(filters.minPrice) : '')
+          setMaxPriceInput(filters.maxPrice ? String(filters.maxPrice) : '')
+        })
+        .catch(() => {
+          if (!cancelled) setSearchText(phrase)
+        })
+        .finally(() => {
+          if (!cancelled) setInterpreting(false)
+        })
+    }, 300)
+    return () => {
+      cancelled = true
+      window.clearTimeout(handle)
+    }
+  }, [query])
 
   // Full filtered list (used for the product grid) + URL sync — reacts to every filter.
   useEffect(() => {
     const handle = window.setTimeout(() => {
       const params = new URLSearchParams()
-      if (query.trim()) params.set('q', query.trim())
-      if (productType !== ALL_SENTINEL) {
+      if (searchText.trim()) params.set('q', searchText.trim())
+      // "Other" has no server-side representation (it's "doesn't match any known
+      // type"), so it's left off the request and applied as a client-side filter
+      // on the response instead.
+      if (productType !== ALL_SENTINEL && productType !== OTHER_SENTINEL) {
         params.set('productType', encodeCsvParam(bilingualPair(productType, productTypes)))
       }
       if (genders.length) params.set('gender', encodeCsvParam(genders))
@@ -254,7 +360,13 @@ export default function Storefront({
         .then((response) =>
           response.ok ? response.json() : Promise.reject(new Error('Failed to load products.')),
         )
-        .then((data: Product[]) => setFetchedProducts(data))
+        .then((data: Product[]) =>
+          setFetchedProducts(
+            productType === OTHER_SENTINEL
+              ? data.filter((product) => isOtherProductType(product.productType, productTypes))
+              : data,
+          ),
+        )
         .catch((error) => {
           if ((error as Error).name !== 'AbortError') console.error(error)
         })
@@ -267,7 +379,7 @@ export default function Storefront({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     productType,
-    query,
+    searchText,
     genders,
     sportsSelected,
     merchantsSelected,
@@ -287,8 +399,8 @@ export default function Storefront({
     }
     const handle = window.setTimeout(() => {
       const params = new URLSearchParams()
-      if (query.trim()) params.set('q', query.trim())
-      if (productType !== ALL_SENTINEL) {
+      if (searchText.trim()) params.set('q', searchText.trim())
+      if (productType !== ALL_SENTINEL && productType !== OTHER_SENTINEL) {
         params.set('productType', encodeCsvParam(bilingualPair(productType, productTypes)))
       }
       if (appliedMinPrice != null) params.set('minPrice', String(appliedMinPrice))
@@ -303,7 +415,13 @@ export default function Storefront({
         .then((response) =>
           response.ok ? response.json() : Promise.reject(new Error('Failed to load products.')),
         )
-        .then((data: Product[]) => setFetchedFacetBase(data))
+        .then((data: Product[]) =>
+          setFetchedFacetBase(
+            productType === OTHER_SENTINEL
+              ? data.filter((product) => isOtherProductType(product.productType, productTypes))
+              : data,
+          ),
+        )
         .catch((error) => {
           if ((error as Error).name !== 'AbortError') console.error(error)
         })
@@ -313,14 +431,24 @@ export default function Storefront({
       window.clearTimeout(handle)
       facetAbortRef.current?.abort()
     }
-  }, [productType, productTypes, query, appliedMinPrice, appliedMaxPrice, shopSlug, isFiltered])
+  }, [
+    productType,
+    productTypes,
+    searchText,
+    appliedMinPrice,
+    appliedMaxPrice,
+    shopSlug,
+    isFiltered,
+  ])
 
   const clientFacetBase = useMemo(
     () =>
       initialProducts.filter(
         (product) =>
           (productType === ALL_SENTINEL ||
-            matchesBilingual(product.productType, productType, productTypes)) &&
+            (productType === OTHER_SENTINEL
+              ? isOtherProductType(product.productType, productTypes)
+              : matchesBilingual(product.productType, productType, productTypes))) &&
           product.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()) &&
           (appliedMinPrice == null || product.priceCents >= appliedMinPrice * 100) &&
           (appliedMaxPrice == null || product.priceCents <= appliedMaxPrice * 100),
@@ -344,8 +472,23 @@ export default function Storefront({
     else if (sortOrder === 'most-viewed') sorted.sort((a, b) => b._count.views - a._count.views)
     return sorted
   }, [fetchedProducts, facetBaseProducts, genders, sportsSelected, merchantsSelected, sortOrder])
-  const totalPages = Math.max(1, Math.ceil(products.length / pageSize))
-  const pagedProducts = products.slice((page - 1) * pageSize, page * pageSize)
+  const visibleProducts = products.slice(0, visibleCount)
+  const hasMore = products.length > visibleProducts.length
+  // The "load more" button doubles as the scroll sentinel: the observer reveals
+  // the next batch as it comes into view, and the button itself stays clickable
+  // for keyboard users and for browsers without IntersectionObserver.
+  useEffect(() => {
+    const node = loadMoreRef.current
+    if (!node || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) revealMore()
+      },
+      { rootMargin: '400px 0px' },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [visibleCount, hasMore])
   const genderFacets = useMemo(
     () =>
       GENDER_OPTIONS.map((option) => ({
@@ -356,18 +499,16 @@ export default function Storefront({
       })),
     [facetBaseProducts, lang],
   )
-  // Merchants with nothing in the current result set are dropped rather than listed at
-  // zero: the roster grows with every onboarded shop, and a wall of empty rows is noise.
+  // Every merchant stays listed, including at zero, so the roster reads as the full
+  // set of shops on the marketplace rather than shifting with each filter change.
   const merchantFacets = useMemo(
     () =>
-      merchants
-        .map((option) => ({
-          label: option.name,
-          value: option.slug,
-          count: facetBaseProducts.filter((p) => p.shop.slug === option.slug).length,
-        }))
-        .filter((facet) => facet.count > 0 || merchantsSelected.includes(facet.value)),
-    [merchants, facetBaseProducts, merchantsSelected],
+      merchants.map((option) => ({
+        label: option.name,
+        value: option.slug,
+        count: facetBaseProducts.filter((p) => p.shop.slug === option.slug).length,
+      })),
+    [merchants, facetBaseProducts],
   )
   const sportFacets = useMemo(
     () =>
@@ -392,9 +533,21 @@ export default function Storefront({
       .catch(() => undefined)
   }
 
+  const comparingIds = comparing.map((product) => product.id)
+  const compareFull = comparing.length >= MAX_COMPARE
+
+  const toggleCompare = (product: Product) =>
+    setComparing((current) => {
+      if (current.some((entry) => entry.id === product.id))
+        return current.filter((entry) => entry.id !== product.id)
+      if (current.length >= MAX_COMPARE) return current
+      const { id, name, imageUrls, priceCents, affiliateUrl } = product
+      return [...current, { id, name, imageUrls, priceCents, affiliateUrl }]
+    })
+
   const productGrid = (
-    <div className={`buyer-product-grid${isFiltered ? ' buyer-product-grid--results' : ''}`}>
-      {pagedProducts.map((product) => {
+    <div className="buyer-product-grid buyer-product-grid--results">
+      {visibleProducts.map((product) => {
         const primaryImage = productImages(product)[0]
         return (
           <article key={product.id}>
@@ -402,7 +555,7 @@ export default function Storefront({
               className="buyer-product-card"
               interactive
               onClick={(event) => {
-                if ((event.target as HTMLElement).closest('a, button')) return
+                if ((event.target as HTMLElement).closest('a, button, label, input')) return
                 openProductDetails(product)
               }}
             >
@@ -415,7 +568,7 @@ export default function Storefront({
                 <button
                   type="button"
                   className="buyer-product-detail-trigger"
-                  aria-label={t('viewProductDetails', { name: product.name })}
+                  aria-label={t('viewProductDetails', { name: cleanProductName(product.name) })}
                   onClick={() => openProductDetails(product)}
                 />
                 {!primaryImage && (
@@ -433,11 +586,13 @@ export default function Storefront({
                     className="buyer-product-title-button"
                     onClick={() => openProductDetails(product)}
                   >
-                    {product.name}
+                    {cleanProductName(product.name)}
                   </button>
                 </h2>
                 {product.description && (
-                  <p className="buyer-product-description">{product.description}</p>
+                  <p className="buyer-product-description">
+                    {cleanProductName(product.description)}
+                  </p>
                 )}
                 <div className="buyer-product-footer">
                   <div className="buyer-price">
@@ -446,11 +601,19 @@ export default function Storefront({
                   <button
                     type="button"
                     className="buyer-view-button"
-                    aria-label={t('viewProductDetails', { name: product.name })}
+                    aria-label={t('viewProductDetails', { name: cleanProductName(product.name) })}
                     onClick={() => openProductDetails(product)}
                   >
                     {t('viewDetails')}
                   </button>
+                </div>
+                <div className="buyer-product-compare">
+                  <Checkbox
+                    label={t('compareAdd')}
+                    checked={comparingIds.includes(product.id)}
+                    disabled={compareFull && !comparingIds.includes(product.id)}
+                    onChange={() => toggleCompare(product)}
+                  />
                 </div>
               </div>
             </Card>
@@ -460,48 +623,106 @@ export default function Storefront({
     </div>
   )
 
-  const pagination = products.length > pageSize && (
-    <nav className="buyer-pagination" aria-label={t('paginationLabel')}>
-      <button
-        type="button"
-        className="buyer-pagination-prev"
-        aria-label={t('paginationPrev')}
-        disabled={page <= 1}
-        onClick={() => setPage((current) => Math.max(1, current - 1))}
-      >
-        <ChevronLeftIcon aria-hidden="true" />
-      </button>
-      {paginationItems(page, totalPages, 3).map((item, index) =>
-        item === ELLIPSIS ? (
-          <span key={`ellipsis-${index}`} className="buyer-pagination-ellipsis" aria-hidden="true">
-            {ELLIPSIS}
-          </span>
-        ) : (
-          <button
-            key={item}
-            type="button"
-            className="buyer-pagination-page"
-            aria-current={item === page ? 'page' : undefined}
-            aria-label={t('paginationPage', { page: item })}
-            onClick={() => setPage(item)}
-          >
-            {item}
-          </button>
-        ),
+  const loadMore = products.length > 0 && (
+    <div className="buyer-load-more">
+      <p className="buyer-load-more-status" role="status" aria-live="polite">
+        {t('showingCount', {
+          shown: visibleProducts.length.toLocaleString('en-US'),
+          total: products.length.toLocaleString('en-US'),
+        })}
+      </p>
+      {hasMore && (
+        <button
+          type="button"
+          ref={loadMoreRef}
+          className="buyer-load-more-button"
+          onClick={revealMore}
+        >
+          {t('loadMore')}
+        </button>
       )}
-      <button
-        type="button"
-        className="buyer-pagination-next"
-        aria-label={t('paginationNext')}
-        disabled={page >= totalPages}
-        onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-      >
-        <ChevronRightIcon aria-hidden="true" />
-      </button>
-    </nav>
+    </div>
   )
 
-  const emptyState = !products.length && (
+  // Show the reading back, and let each part of it be undone. An interpretation
+  // the customer cannot see or correct is indistinguishable from "you have none
+  // of these" when it gets the phrase wrong.
+  const readingChips = (() => {
+    // The moment the machine is working is the moment worth showing. Without
+    // this the whole feature happens invisibly between two renders.
+    if (interpreting)
+      return (
+        <div className="buyer-reading buyer-ai-panel">
+          <AiMark label={t('aiSearchWorking')} working />
+          <span className="buyer-ai-skeleton buyer-ai-skeleton--sm" aria-hidden="true" />
+          <span className="buyer-ai-skeleton buyer-ai-skeleton--md" aria-hidden="true" />
+        </div>
+      )
+    if (!interpreted) return null
+    const chips: { key: string; label: string; clear: () => void }[] = []
+    if (interpreted.productType) {
+      const option = productTypes.find((entry) => entry.nameEn === interpreted.productType)
+      chips.push({
+        key: 'type',
+        label: option ? displayLabel(option, lang) : interpreted.productType,
+        clear: () => setProductType(ALL_SENTINEL),
+      })
+    }
+    if (interpreted.sport) {
+      const option = sports.find((entry) => entry.nameEn === interpreted.sport)
+      chips.push({
+        key: 'sport',
+        label: option ? displayLabel(option, lang) : interpreted.sport,
+        clear: () => setSportsSelected([]),
+      })
+    }
+    for (const gender of interpreted.genders ?? []) {
+      const option = GENDER_OPTIONS.find((entry) => entry.nameEn === gender)
+      chips.push({
+        key: `gender-${gender}`,
+        label: option ? displayLabel(option, lang) : gender,
+        clear: () => setGenders((current) => current.filter((entry) => entry !== gender)),
+      })
+    }
+    if (interpreted.minPrice || interpreted.maxPrice) {
+      const from = interpreted.minPrice ? moneyRounded(interpreted.minPrice * 100) : null
+      const to = interpreted.maxPrice ? moneyRounded(interpreted.maxPrice * 100) : null
+      chips.push({
+        key: 'price',
+        label: from && to ? `${from} – ${to}` : to ? `≤ ${to}` : `≥ ${from}`,
+        clear: () => {
+          setAppliedMinPrice(null)
+          setAppliedMaxPrice(null)
+          setMinPriceInput('')
+          setMaxPriceInput('')
+        },
+      })
+    }
+    if (!chips.length) return null
+    return (
+      <div className="buyer-reading buyer-ai-panel">
+        <AiMark label={t('aiSearchMark')} />
+        <span className="buyer-reading-label">{t('searchUnderstoodAs')}</span>
+        {chips.map((chip) => (
+          <button
+            key={chip.key}
+            type="button"
+            className="buyer-reading-chip"
+            onClick={chip.clear}
+            aria-label={t('removeFilter', { name: chip.label })}
+          >
+            {chip.label}
+            <span aria-hidden="true">×</span>
+          </button>
+        ))}
+      </div>
+    )
+  })()
+
+  // "Nothing found" is a claim about the catalogue, and it is not true yet while
+  // the phrase is still being read or the results are still in flight. Showing
+  // it early makes every sentence search flash an empty shop first.
+  const emptyState = !products.length && !interpreting && !productsLoading && (
     <EmptyState title={t('noProductsTitle')} description={t('noProductsDescription')} />
   )
 
@@ -522,16 +743,6 @@ export default function Storefront({
         )}
         <div className="buyer-filters-title-row">
           <h2 className="buyer-filters-title">{t('chooseShopHeading')}</h2>
-          <div className="buyer-results-sort buyer-page-size">
-            <span>{t('itemsPerPage')}</span>
-            <Select
-              label=""
-              aria-label={t('itemsPerPage')}
-              value={String(pageSize)}
-              onChange={(event) => setPageSize(Number(event.target.value))}
-              options={PAGE_SIZE_OPTIONS.map((size) => ({ value: String(size), label: String(size) }))}
-            />
-          </div>
         </div>
         <div className="buyer-filters" aria-label={t('allCategories')}>
           {productTypeButtons.map(({ key, display }) => (
@@ -543,86 +754,89 @@ export default function Storefront({
               onClick={() => setProductType(key)}
             >
               {display}
+              <span className="buyer-type-badge">
+                {(productTypeCounts.get(key) ?? 0).toLocaleString('en-US')}
+              </span>
             </Button>
           ))}
         </div>
-        {isFiltered ? (
-          <div className="buyer-results-layout">
-            <aside className="buyer-filter-sidebar">
+        <div className="buyer-results-layout">
+          <aside className="buyer-filter-sidebar">
+            <FilterGroup
+              title={t('filterGender')}
+              items={genderFacets}
+              selected={genders}
+              onToggle={(label) => toggleBilingualFacet(label, setGenders, GENDER_OPTIONS)}
+            />
+            <FilterGroup
+              title={t('filterSport')}
+              items={sportFacets}
+              selected={sportsSelected}
+              onToggle={(label) => toggleBilingualFacet(label, setSportsSelected, sports)}
+            />
+            {merchantFacets.length > 0 && (
               <FilterGroup
-                title={t('filterGender')}
-                items={genderFacets}
-                selected={genders}
-                onToggle={(label) => toggleBilingualFacet(label, setGenders, GENDER_OPTIONS)}
+                title={t('filterMerchant')}
+                items={merchantFacets}
+                selected={merchantsSelected}
+                onToggle={(slug) =>
+                  setMerchantsSelected((current) =>
+                    current.includes(slug)
+                      ? current.filter((entry) => entry !== slug)
+                      : [...current, slug],
+                  )
+                }
               />
-              <FilterGroup
-                title={t('filterSport')}
-                items={sportFacets}
-                selected={sportsSelected}
-                onToggle={(label) => toggleBilingualFacet(label, setSportsSelected, sports)}
-              />
-              {merchantFacets.length > 0 && (
-                <FilterGroup
-                  title={t('filterMerchant')}
-                  items={merchantFacets}
-                  selected={merchantsSelected}
-                  onToggle={(slug) =>
-                    setMerchantsSelected((current) =>
-                      current.includes(slug)
-                        ? current.filter((entry) => entry !== slug)
-                        : [...current, slug],
-                    )
-                  }
+            )}
+            <PriceFilterGroup
+              minValue={minPriceInput}
+              maxValue={maxPriceInput}
+              onMinChange={setMinPriceInput}
+              onMaxChange={setMaxPriceInput}
+              onApply={applyPriceFilter}
+            />
+          </aside>
+          <div className="buyer-results-main">
+            {readingChips}
+            <div className="buyer-results-header">
+              <h2>
+                {productType !== ALL_SENTINEL ? productTypeDisplay : query || t('allProductType')}
+                <span>
+                  {' '}
+                  ({products.length.toLocaleString('en-US')} {t('productsCountSuffix')})
+                  {(interpreting || productsLoading || facetLoading) && (
+                    <span className="buyer-results-loading">{t('loadingResults')}</span>
+                  )}
+                </span>
+              </h2>
+              <div className="buyer-results-sort">
+                <span>{t('sortBy')}</span>
+                <Select
+                  label=""
+                  aria-label={t('sortBy')}
+                  value={sortOrder}
+                  onChange={(event) => setSortOrder(event.target.value as typeof sortOrder)}
+                  options={[
+                    { value: 'price-asc', label: t('sortPriceAsc') },
+                    { value: 'price-desc', label: t('sortPriceDesc') },
+                    { value: 'most-viewed', label: t('sortMostViewed') },
+                  ]}
                 />
-              )}
-              <PriceFilterGroup
-                minValue={minPriceInput}
-                maxValue={maxPriceInput}
-                onMinChange={setMinPriceInput}
-                onMaxChange={setMaxPriceInput}
-                onApply={applyPriceFilter}
-              />
-            </aside>
-            <div className="buyer-results-main">
-              <div className="buyer-results-header">
-                <h2>
-                  {productType !== ALL_SENTINEL ? productTypeDisplay : query}
-                  <span>
-                    {' '}
-                    ({products.length.toLocaleString('en-US')} {t('productsCountSuffix')})
-                    {(productsLoading || facetLoading) && (
-                      <span className="buyer-results-loading">{t('loadingResults')}</span>
-                    )}
-                  </span>
-                </h2>
-                <div className="buyer-results-sort">
-                  <span>{t('sortBy')}</span>
-                  <Select
-                    label=""
-                    aria-label={t('sortBy')}
-                    value={sortOrder}
-                    onChange={(event) => setSortOrder(event.target.value as typeof sortOrder)}
-                    options={[
-                      { value: 'price-asc', label: t('sortPriceAsc') },
-                      { value: 'price-desc', label: t('sortPriceDesc') },
-                      { value: 'most-viewed', label: t('sortMostViewed') },
-                    ]}
-                  />
-                </div>
               </div>
-              {productGrid}
-              {pagination}
-              {emptyState}
             </div>
-          </div>
-        ) : (
-          <>
             {productGrid}
-            {pagination}
+            {loadMore}
             {emptyState}
-          </>
-        )}
+          </div>
+        </div>
       </div>
+      <CompareBar
+        selected={comparing}
+        onRemove={(productId) =>
+          setComparing((current) => current.filter((entry) => entry.id !== productId))
+        }
+        onClear={() => setComparing([])}
+      />
       <Dialog
         open={Boolean(selectedProduct)}
         onClose={() => setSelectedProduct(null)}
@@ -692,7 +906,9 @@ export default function Storefront({
                   {t('skuLabel')} {productSku(selectedProduct)}
                 </span>
               </div>
-              <h3 className="buyer-product-dialog-title">{selectedProduct.name}</h3>
+              <h3 className="buyer-product-dialog-title">
+                {cleanProductName(selectedProduct.name)}
+              </h3>
               <p className="buyer-product-dialog-views">
                 {t('viewCountLabel', {
                   count: selectedProduct._count.views.toLocaleString('en-US'),
@@ -718,9 +934,10 @@ export default function Storefront({
                         variant="primary"
                         size="compact"
                         className="buyer-product-marketplace-buy"
-                        onClick={() =>
+                        onClick={() => {
+                          recordProductClickOut(selectedProduct.id, destination.marketplace)
                           window.open(destination.url, '_blank', 'noopener,noreferrer')
-                        }
+                        }}
                       >
                         {t('buyNow')}
                       </Button>
@@ -735,7 +952,9 @@ export default function Storefront({
                   {t('productDetails')}
                 </span>
               </div>
-              <p className="buyer-product-dialog-description">{selectedProduct.description}</p>
+              <p className="buyer-product-dialog-description">
+                {cleanProductName(selectedProduct.description)}
+              </p>
             </div>
           </div>
         )}

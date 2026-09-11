@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { readSession } from '@/lib/auth'
 import HeaderSearch from './HeaderSearch'
 import HomeNavLink from './HomeNavLink'
+import KitNavLink from './KitNavLink'
 import LanguageSwitch from './LanguageSwitch'
 
 export default async function Header({ initialQuery = '' }: { initialQuery?: string }) {
@@ -37,6 +38,7 @@ export default async function Header({ initialQuery = '' }: { initialQuery?: str
           </Link>
           <HeaderSearch initialQuery={initialQuery} />
           <div className="nav-links">
+            <KitNavLink />
             <LanguageSwitch />
             {session && session.role !== 'VENDOR' && (
               <Link className="button soft" href={dashboard}>

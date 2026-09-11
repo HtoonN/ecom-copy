@@ -17,10 +17,10 @@ export default async function Home({
       orderBy: { createdAt: 'desc' },
     }),
     searchParams,
-    // Only merchants that actually have something listed; an empty storefront in the
-    // filter roster is a dead end for the buyer.
+    // Every active shop, listed whether or not it currently has products: the filter
+    // roster is meant to read as the marketplace's full set of merchants.
     prisma.shop.findMany({
-      where: { active: true, products: { some: { active: true } } },
+      where: { active: true },
       select: { name: true, slug: true },
       orderBy: { name: 'asc' },
     }),

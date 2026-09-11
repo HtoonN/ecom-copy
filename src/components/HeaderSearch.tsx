@@ -1,6 +1,7 @@
 'use client'
 
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { SparklesIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { t, useLanguageSync } from '@/features/buyer/locales'
@@ -35,6 +36,8 @@ export default function HeaderSearch({ initialQuery = '' }: { initialQuery?: str
         value={value}
         onChange={(event) => setValue(event.target.value)}
       />
+      {/* The box now takes sentences, and nothing else on the page says so. */}
+      <SparklesIcon className="header-search-ai" aria-hidden="true" />
     </form>
   )
 }

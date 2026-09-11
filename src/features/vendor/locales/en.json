@@ -150,5 +150,6 @@
   "signingOut": "Signing out…",
   "confirmSignOutTitle": "Sign out?",
   "confirmSignOutDescription": "You'll need to sign in again to access your workspace.",
-  "platformBrandName": "Matchday Marketplace"
+  "platformBrandName": "Matchday Marketplace",
+  "productClickOuts": "{count} clicks through to buy"
 }

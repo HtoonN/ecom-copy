@@ -498,6 +498,9 @@ function ProductTable({
                         count: p._count?.views || 0,
                       })}
                     </div>
+                    <div className="product-description">
+                      {t('productClickOuts', { count: p._count?.clickOuts || 0 })}
+                    </div>
                     {p.listingMode !== 'NATIVE' && (
                       <span className="badge warn">
                         {((p.affiliateUrl as string[]) || [])
@@ -563,7 +566,9 @@ function ProductTable({
       <ConfirmationDialog
         open={Boolean(pendingDelete)}
         title={t('deleteProductTitle')}
-        description={pendingDelete ? t('deleteProductDescription', { name: pendingDelete.name }) : ''}
+        description={
+          pendingDelete ? t('deleteProductDescription', { name: pendingDelete.name }) : ''
+        }
         confirmLabel={t('deleteProductConfirm')}
         cancelLabel={t('keepProduct')}
         closeLabel={t('closeConfirmation')}

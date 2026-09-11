@@ -2,7 +2,9 @@ import { Prisma } from '@/generated/prisma/client'
 
 export const productListInclude = {
   shop: { select: { name: true, slug: true, logoUrl: true } },
-  _count: { select: { views: true } },
+  // Views measure interest; click-outs measure the only action that can earn a
+  // commission, since every product here is fulfilled by the shop that sells it.
+  _count: { select: { views: true, clickOuts: true } },
 } satisfies Prisma.ProductInclude
 
 export type ProductListFilters = {

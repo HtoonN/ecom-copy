@@ -150,5 +150,6 @@
   "signingOut": "กำลังออกจากระบบ…",
   "confirmSignOutTitle": "ออกจากระบบหรือไม่?",
   "confirmSignOutDescription": "คุณจะต้องเข้าสู่ระบบอีกครั้งเพื่อใช้งานพื้นที่ทำงานของคุณ",
-  "platformBrandName": "Matchday Marketplace"
+  "platformBrandName": "Matchday Marketplace",
+  "productClickOuts": "กดไปซื้อ {count} ครั้ง"
 }

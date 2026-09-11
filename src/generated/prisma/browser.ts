@@ -58,6 +58,31 @@ export type Product = Prisma.ProductModel
  */
 export type ProductView = Prisma.ProductViewModel
 /**
+ * Model SearchInterpretation
+ * 
+ */
+export type SearchInterpretation = Prisma.SearchInterpretationModel
+/**
+ * Model ProductComparison
+ * 
+ */
+export type ProductComparison = Prisma.ProductComparisonModel
+/**
+ * Model Bundle
+ * 
+ */
+export type Bundle = Prisma.BundleModel
+/**
+ * Model BundleItem
+ * 
+ */
+export type BundleItem = Prisma.BundleItemModel
+/**
+ * Model ProductClickOut
+ * 
+ */
+export type ProductClickOut = Prisma.ProductClickOutModel
+/**
  * Model Address
  * 
  */
