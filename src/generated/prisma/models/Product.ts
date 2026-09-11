@@ -323,8 +323,6 @@ export type ProductWhereInput = {
   shop?: Prisma.XOR<Prisma.ShopScalarRelationFilter, Prisma.ShopWhereInput>
   orderItems?: Prisma.OrderItemListRelationFilter
   views?: Prisma.ProductViewListRelationFilter
-  clickOuts?: Prisma.ProductClickOutListRelationFilter
-  bundleItems?: Prisma.BundleItemListRelationFilter
 }
 
 export type ProductOrderByWithRelationInput = {
@@ -349,8 +347,6 @@ export type ProductOrderByWithRelationInput = {
   shop?: Prisma.ShopOrderByWithRelationInput
   orderItems?: Prisma.OrderItemOrderByRelationAggregateInput
   views?: Prisma.ProductViewOrderByRelationAggregateInput
-  clickOuts?: Prisma.ProductClickOutOrderByRelationAggregateInput
-  bundleItems?: Prisma.BundleItemOrderByRelationAggregateInput
   _relevance?: Prisma.ProductOrderByRelevanceInput
 }
 
@@ -379,8 +375,6 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   shop?: Prisma.XOR<Prisma.ShopScalarRelationFilter, Prisma.ShopWhereInput>
   orderItems?: Prisma.OrderItemListRelationFilter
   views?: Prisma.ProductViewListRelationFilter
-  clickOuts?: Prisma.ProductClickOutListRelationFilter
-  bundleItems?: Prisma.BundleItemListRelationFilter
 }, "id" | "sku" | "slug">
 
 export type ProductOrderByWithAggregationInput = {
@@ -453,8 +447,6 @@ export type ProductCreateInput = {
   shop: Prisma.ShopCreateNestedOneWithoutProductsInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   views?: Prisma.ProductViewCreateNestedManyWithoutProductInput
-  clickOuts?: Prisma.ProductClickOutCreateNestedManyWithoutProductInput
-  bundleItems?: Prisma.BundleItemCreateNestedManyWithoutProductInput
 }
 
 export type ProductUncheckedCreateInput = {
@@ -478,8 +470,6 @@ export type ProductUncheckedCreateInput = {
   updatedAt?: Date | string
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   views?: Prisma.ProductViewUncheckedCreateNestedManyWithoutProductInput
-  clickOuts?: Prisma.ProductClickOutUncheckedCreateNestedManyWithoutProductInput
-  bundleItems?: Prisma.BundleItemUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type ProductUpdateInput = {
@@ -502,8 +492,6 @@ export type ProductUpdateInput = {
   shop?: Prisma.ShopUpdateOneRequiredWithoutProductsNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   views?: Prisma.ProductViewUpdateManyWithoutProductNestedInput
-  clickOuts?: Prisma.ProductClickOutUpdateManyWithoutProductNestedInput
-  bundleItems?: Prisma.BundleItemUpdateManyWithoutProductNestedInput
 }
 
 export type ProductUncheckedUpdateInput = {
@@ -527,8 +515,6 @@ export type ProductUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   views?: Prisma.ProductViewUncheckedUpdateManyWithoutProductNestedInput
-  clickOuts?: Prisma.ProductClickOutUncheckedUpdateManyWithoutProductNestedInput
-  bundleItems?: Prisma.BundleItemUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type ProductCreateManyInput = {
@@ -744,34 +730,6 @@ export type ProductUpdateOneRequiredWithoutViewsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProductUpdateToOneWithWhereWithoutViewsInput, Prisma.ProductUpdateWithoutViewsInput>, Prisma.ProductUncheckedUpdateWithoutViewsInput>
 }
 
-export type ProductCreateNestedOneWithoutBundleItemsInput = {
-  create?: Prisma.XOR<Prisma.ProductCreateWithoutBundleItemsInput, Prisma.ProductUncheckedCreateWithoutBundleItemsInput>
-  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutBundleItemsInput
-  connect?: Prisma.ProductWhereUniqueInput
-}
-
-export type ProductUpdateOneRequiredWithoutBundleItemsNestedInput = {
-  create?: Prisma.XOR<Prisma.ProductCreateWithoutBundleItemsInput, Prisma.ProductUncheckedCreateWithoutBundleItemsInput>
-  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutBundleItemsInput
-  upsert?: Prisma.ProductUpsertWithoutBundleItemsInput
-  connect?: Prisma.ProductWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductUpdateToOneWithWhereWithoutBundleItemsInput, Prisma.ProductUpdateWithoutBundleItemsInput>, Prisma.ProductUncheckedUpdateWithoutBundleItemsInput>
-}
-
-export type ProductCreateNestedOneWithoutClickOutsInput = {
-  create?: Prisma.XOR<Prisma.ProductCreateWithoutClickOutsInput, Prisma.ProductUncheckedCreateWithoutClickOutsInput>
-  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutClickOutsInput
-  connect?: Prisma.ProductWhereUniqueInput
-}
-
-export type ProductUpdateOneRequiredWithoutClickOutsNestedInput = {
-  create?: Prisma.XOR<Prisma.ProductCreateWithoutClickOutsInput, Prisma.ProductUncheckedCreateWithoutClickOutsInput>
-  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutClickOutsInput
-  upsert?: Prisma.ProductUpsertWithoutClickOutsInput
-  connect?: Prisma.ProductWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductUpdateToOneWithWhereWithoutClickOutsInput, Prisma.ProductUpdateWithoutClickOutsInput>, Prisma.ProductUncheckedUpdateWithoutClickOutsInput>
-}
-
 export type ProductCreateNestedOneWithoutOrderItemsInput = {
   create?: Prisma.XOR<Prisma.ProductCreateWithoutOrderItemsInput, Prisma.ProductUncheckedCreateWithoutOrderItemsInput>
   connectOrCreate?: Prisma.ProductCreateOrConnectWithoutOrderItemsInput
@@ -805,8 +763,6 @@ export type ProductCreateWithoutShopInput = {
   updatedAt?: Date | string
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
   views?: Prisma.ProductViewCreateNestedManyWithoutProductInput
-  clickOuts?: Prisma.ProductClickOutCreateNestedManyWithoutProductInput
-  bundleItems?: Prisma.BundleItemCreateNestedManyWithoutProductInput
 }
 
 export type ProductUncheckedCreateWithoutShopInput = {
@@ -829,8 +785,6 @@ export type ProductUncheckedCreateWithoutShopInput = {
   updatedAt?: Date | string
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
   views?: Prisma.ProductViewUncheckedCreateNestedManyWithoutProductInput
-  clickOuts?: Prisma.ProductClickOutUncheckedCreateNestedManyWithoutProductInput
-  bundleItems?: Prisma.BundleItemUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type ProductCreateOrConnectWithoutShopInput = {
@@ -902,8 +856,6 @@ export type ProductCreateWithoutViewsInput = {
   updatedAt?: Date | string
   shop: Prisma.ShopCreateNestedOneWithoutProductsInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
-  clickOuts?: Prisma.ProductClickOutCreateNestedManyWithoutProductInput
-  bundleItems?: Prisma.BundleItemCreateNestedManyWithoutProductInput
 }
 
 export type ProductUncheckedCreateWithoutViewsInput = {
@@ -926,8 +878,6 @@ export type ProductUncheckedCreateWithoutViewsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
-  clickOuts?: Prisma.ProductClickOutUncheckedCreateNestedManyWithoutProductInput
-  bundleItems?: Prisma.BundleItemUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type ProductCreateOrConnectWithoutViewsInput = {
@@ -965,8 +915,6 @@ export type ProductUpdateWithoutViewsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   shop?: Prisma.ShopUpdateOneRequiredWithoutProductsNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
-  clickOuts?: Prisma.ProductClickOutUpdateManyWithoutProductNestedInput
-  bundleItems?: Prisma.BundleItemUpdateManyWithoutProductNestedInput
 }
 
 export type ProductUncheckedUpdateWithoutViewsInput = {
@@ -989,228 +937,6 @@ export type ProductUncheckedUpdateWithoutViewsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
-  clickOuts?: Prisma.ProductClickOutUncheckedUpdateManyWithoutProductNestedInput
-  bundleItems?: Prisma.BundleItemUncheckedUpdateManyWithoutProductNestedInput
-}
-
-export type ProductCreateWithoutBundleItemsInput = {
-  name: string
-  sku?: string | null
-  slug: string
-  category: string
-  productType?: string
-  sport?: string | null
-  gender?: string | null
-  brand?: string | null
-  description: string
-  imageUrls: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  priceCents: number
-  listingMode?: $Enums.ListingMode
-  affiliateUrl: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  active?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  shop: Prisma.ShopCreateNestedOneWithoutProductsInput
-  orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
-  views?: Prisma.ProductViewCreateNestedManyWithoutProductInput
-  clickOuts?: Prisma.ProductClickOutCreateNestedManyWithoutProductInput
-}
-
-export type ProductUncheckedCreateWithoutBundleItemsInput = {
-  id?: number
-  shopId: number
-  name: string
-  sku?: string | null
-  slug: string
-  category: string
-  productType?: string
-  sport?: string | null
-  gender?: string | null
-  brand?: string | null
-  description: string
-  imageUrls: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  priceCents: number
-  listingMode?: $Enums.ListingMode
-  affiliateUrl: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  active?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
-  views?: Prisma.ProductViewUncheckedCreateNestedManyWithoutProductInput
-  clickOuts?: Prisma.ProductClickOutUncheckedCreateNestedManyWithoutProductInput
-}
-
-export type ProductCreateOrConnectWithoutBundleItemsInput = {
-  where: Prisma.ProductWhereUniqueInput
-  create: Prisma.XOR<Prisma.ProductCreateWithoutBundleItemsInput, Prisma.ProductUncheckedCreateWithoutBundleItemsInput>
-}
-
-export type ProductUpsertWithoutBundleItemsInput = {
-  update: Prisma.XOR<Prisma.ProductUpdateWithoutBundleItemsInput, Prisma.ProductUncheckedUpdateWithoutBundleItemsInput>
-  create: Prisma.XOR<Prisma.ProductCreateWithoutBundleItemsInput, Prisma.ProductUncheckedCreateWithoutBundleItemsInput>
-  where?: Prisma.ProductWhereInput
-}
-
-export type ProductUpdateToOneWithWhereWithoutBundleItemsInput = {
-  where?: Prisma.ProductWhereInput
-  data: Prisma.XOR<Prisma.ProductUpdateWithoutBundleItemsInput, Prisma.ProductUncheckedUpdateWithoutBundleItemsInput>
-}
-
-export type ProductUpdateWithoutBundleItemsInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.StringFieldUpdateOperationsInput | string
-  productType?: Prisma.StringFieldUpdateOperationsInput | string
-  sport?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  gender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.StringFieldUpdateOperationsInput | string
-  imageUrls?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  priceCents?: Prisma.IntFieldUpdateOperationsInput | number
-  listingMode?: Prisma.EnumListingModeFieldUpdateOperationsInput | $Enums.ListingMode
-  affiliateUrl?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  shop?: Prisma.ShopUpdateOneRequiredWithoutProductsNestedInput
-  orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
-  views?: Prisma.ProductViewUpdateManyWithoutProductNestedInput
-  clickOuts?: Prisma.ProductClickOutUpdateManyWithoutProductNestedInput
-}
-
-export type ProductUncheckedUpdateWithoutBundleItemsInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  shopId?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.StringFieldUpdateOperationsInput | string
-  productType?: Prisma.StringFieldUpdateOperationsInput | string
-  sport?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  gender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.StringFieldUpdateOperationsInput | string
-  imageUrls?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  priceCents?: Prisma.IntFieldUpdateOperationsInput | number
-  listingMode?: Prisma.EnumListingModeFieldUpdateOperationsInput | $Enums.ListingMode
-  affiliateUrl?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
-  views?: Prisma.ProductViewUncheckedUpdateManyWithoutProductNestedInput
-  clickOuts?: Prisma.ProductClickOutUncheckedUpdateManyWithoutProductNestedInput
-}
-
-export type ProductCreateWithoutClickOutsInput = {
-  name: string
-  sku?: string | null
-  slug: string
-  category: string
-  productType?: string
-  sport?: string | null
-  gender?: string | null
-  brand?: string | null
-  description: string
-  imageUrls: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  priceCents: number
-  listingMode?: $Enums.ListingMode
-  affiliateUrl: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  active?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  shop: Prisma.ShopCreateNestedOneWithoutProductsInput
-  orderItems?: Prisma.OrderItemCreateNestedManyWithoutProductInput
-  views?: Prisma.ProductViewCreateNestedManyWithoutProductInput
-  bundleItems?: Prisma.BundleItemCreateNestedManyWithoutProductInput
-}
-
-export type ProductUncheckedCreateWithoutClickOutsInput = {
-  id?: number
-  shopId: number
-  name: string
-  sku?: string | null
-  slug: string
-  category: string
-  productType?: string
-  sport?: string | null
-  gender?: string | null
-  brand?: string | null
-  description: string
-  imageUrls: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  priceCents: number
-  listingMode?: $Enums.ListingMode
-  affiliateUrl: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  active?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutProductInput
-  views?: Prisma.ProductViewUncheckedCreateNestedManyWithoutProductInput
-  bundleItems?: Prisma.BundleItemUncheckedCreateNestedManyWithoutProductInput
-}
-
-export type ProductCreateOrConnectWithoutClickOutsInput = {
-  where: Prisma.ProductWhereUniqueInput
-  create: Prisma.XOR<Prisma.ProductCreateWithoutClickOutsInput, Prisma.ProductUncheckedCreateWithoutClickOutsInput>
-}
-
-export type ProductUpsertWithoutClickOutsInput = {
-  update: Prisma.XOR<Prisma.ProductUpdateWithoutClickOutsInput, Prisma.ProductUncheckedUpdateWithoutClickOutsInput>
-  create: Prisma.XOR<Prisma.ProductCreateWithoutClickOutsInput, Prisma.ProductUncheckedCreateWithoutClickOutsInput>
-  where?: Prisma.ProductWhereInput
-}
-
-export type ProductUpdateToOneWithWhereWithoutClickOutsInput = {
-  where?: Prisma.ProductWhereInput
-  data: Prisma.XOR<Prisma.ProductUpdateWithoutClickOutsInput, Prisma.ProductUncheckedUpdateWithoutClickOutsInput>
-}
-
-export type ProductUpdateWithoutClickOutsInput = {
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.StringFieldUpdateOperationsInput | string
-  productType?: Prisma.StringFieldUpdateOperationsInput | string
-  sport?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  gender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.StringFieldUpdateOperationsInput | string
-  imageUrls?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  priceCents?: Prisma.IntFieldUpdateOperationsInput | number
-  listingMode?: Prisma.EnumListingModeFieldUpdateOperationsInput | $Enums.ListingMode
-  affiliateUrl?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  shop?: Prisma.ShopUpdateOneRequiredWithoutProductsNestedInput
-  orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
-  views?: Prisma.ProductViewUpdateManyWithoutProductNestedInput
-  bundleItems?: Prisma.BundleItemUpdateManyWithoutProductNestedInput
-}
-
-export type ProductUncheckedUpdateWithoutClickOutsInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  shopId?: Prisma.IntFieldUpdateOperationsInput | number
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  sku?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.StringFieldUpdateOperationsInput | string
-  productType?: Prisma.StringFieldUpdateOperationsInput | string
-  sport?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  gender?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  description?: Prisma.StringFieldUpdateOperationsInput | string
-  imageUrls?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  priceCents?: Prisma.IntFieldUpdateOperationsInput | number
-  listingMode?: Prisma.EnumListingModeFieldUpdateOperationsInput | $Enums.ListingMode
-  affiliateUrl?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  active?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
-  views?: Prisma.ProductViewUncheckedUpdateManyWithoutProductNestedInput
-  bundleItems?: Prisma.BundleItemUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type ProductCreateWithoutOrderItemsInput = {
@@ -1232,8 +958,6 @@ export type ProductCreateWithoutOrderItemsInput = {
   updatedAt?: Date | string
   shop: Prisma.ShopCreateNestedOneWithoutProductsInput
   views?: Prisma.ProductViewCreateNestedManyWithoutProductInput
-  clickOuts?: Prisma.ProductClickOutCreateNestedManyWithoutProductInput
-  bundleItems?: Prisma.BundleItemCreateNestedManyWithoutProductInput
 }
 
 export type ProductUncheckedCreateWithoutOrderItemsInput = {
@@ -1256,8 +980,6 @@ export type ProductUncheckedCreateWithoutOrderItemsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   views?: Prisma.ProductViewUncheckedCreateNestedManyWithoutProductInput
-  clickOuts?: Prisma.ProductClickOutUncheckedCreateNestedManyWithoutProductInput
-  bundleItems?: Prisma.BundleItemUncheckedCreateNestedManyWithoutProductInput
 }
 
 export type ProductCreateOrConnectWithoutOrderItemsInput = {
@@ -1295,8 +1017,6 @@ export type ProductUpdateWithoutOrderItemsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   shop?: Prisma.ShopUpdateOneRequiredWithoutProductsNestedInput
   views?: Prisma.ProductViewUpdateManyWithoutProductNestedInput
-  clickOuts?: Prisma.ProductClickOutUpdateManyWithoutProductNestedInput
-  bundleItems?: Prisma.BundleItemUpdateManyWithoutProductNestedInput
 }
 
 export type ProductUncheckedUpdateWithoutOrderItemsInput = {
@@ -1319,8 +1039,6 @@ export type ProductUncheckedUpdateWithoutOrderItemsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   views?: Prisma.ProductViewUncheckedUpdateManyWithoutProductNestedInput
-  clickOuts?: Prisma.ProductClickOutUncheckedUpdateManyWithoutProductNestedInput
-  bundleItems?: Prisma.BundleItemUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type ProductCreateManyShopInput = {
@@ -1362,8 +1080,6 @@ export type ProductUpdateWithoutShopInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderItems?: Prisma.OrderItemUpdateManyWithoutProductNestedInput
   views?: Prisma.ProductViewUpdateManyWithoutProductNestedInput
-  clickOuts?: Prisma.ProductClickOutUpdateManyWithoutProductNestedInput
-  bundleItems?: Prisma.BundleItemUpdateManyWithoutProductNestedInput
 }
 
 export type ProductUncheckedUpdateWithoutShopInput = {
@@ -1386,8 +1102,6 @@ export type ProductUncheckedUpdateWithoutShopInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutProductNestedInput
   views?: Prisma.ProductViewUncheckedUpdateManyWithoutProductNestedInput
-  clickOuts?: Prisma.ProductClickOutUncheckedUpdateManyWithoutProductNestedInput
-  bundleItems?: Prisma.BundleItemUncheckedUpdateManyWithoutProductNestedInput
 }
 
 export type ProductUncheckedUpdateManyWithoutShopInput = {
@@ -1418,15 +1132,11 @@ export type ProductUncheckedUpdateManyWithoutShopInput = {
 export type ProductCountOutputType = {
   orderItems: number
   views: number
-  clickOuts: number
-  bundleItems: number
 }
 
 export type ProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orderItems?: boolean | ProductCountOutputTypeCountOrderItemsArgs
   views?: boolean | ProductCountOutputTypeCountViewsArgs
-  clickOuts?: boolean | ProductCountOutputTypeCountClickOutsArgs
-  bundleItems?: boolean | ProductCountOutputTypeCountBundleItemsArgs
 }
 
 /**
@@ -1453,20 +1163,6 @@ export type ProductCountOutputTypeCountViewsArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.ProductViewWhereInput
 }
 
-/**
- * ProductCountOutputType without action
- */
-export type ProductCountOutputTypeCountClickOutsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ProductClickOutWhereInput
-}
-
-/**
- * ProductCountOutputType without action
- */
-export type ProductCountOutputTypeCountBundleItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.BundleItemWhereInput
-}
-
 
 export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1490,8 +1186,6 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   shop?: boolean | Prisma.ShopDefaultArgs<ExtArgs>
   orderItems?: boolean | Prisma.Product$orderItemsArgs<ExtArgs>
   views?: boolean | Prisma.Product$viewsArgs<ExtArgs>
-  clickOuts?: boolean | Prisma.Product$clickOutsArgs<ExtArgs>
-  bundleItems?: boolean | Prisma.Product$bundleItemsArgs<ExtArgs>
   _count?: boolean | Prisma.ProductCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["product"]>
 
@@ -1523,8 +1217,6 @@ export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   shop?: boolean | Prisma.ShopDefaultArgs<ExtArgs>
   orderItems?: boolean | Prisma.Product$orderItemsArgs<ExtArgs>
   views?: boolean | Prisma.Product$viewsArgs<ExtArgs>
-  clickOuts?: boolean | Prisma.Product$clickOutsArgs<ExtArgs>
-  bundleItems?: boolean | Prisma.Product$bundleItemsArgs<ExtArgs>
   _count?: boolean | Prisma.ProductCountOutputTypeDefaultArgs<ExtArgs>
 }
 
@@ -1534,8 +1226,6 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     shop: Prisma.$ShopPayload<ExtArgs>
     orderItems: Prisma.$OrderItemPayload<ExtArgs>[]
     views: Prisma.$ProductViewPayload<ExtArgs>[]
-    clickOuts: Prisma.$ProductClickOutPayload<ExtArgs>[]
-    bundleItems: Prisma.$BundleItemPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1899,8 +1589,6 @@ export interface Prisma__ProductClient<T, Null = never, ExtArgs extends runtime.
   shop<T extends Prisma.ShopDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ShopDefaultArgs<ExtArgs>>): Prisma.Prisma__ShopClient<runtime.Types.Result.GetResult<Prisma.$ShopPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   orderItems<T extends Prisma.Product$orderItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$orderItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   views<T extends Prisma.Product$viewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$viewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductViewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  clickOuts<T extends Prisma.Product$clickOutsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$clickOutsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductClickOutPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  bundleItems<T extends Prisma.Product$bundleItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$bundleItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BundleItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2341,54 +2029,6 @@ export type Product$viewsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.ProductViewScalarFieldEnum | Prisma.ProductViewScalarFieldEnum[]
-}
-
-/**
- * Product.clickOuts
- */
-export type Product$clickOutsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ProductClickOut
-   */
-  select?: Prisma.ProductClickOutSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ProductClickOut
-   */
-  omit?: Prisma.ProductClickOutOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ProductClickOutInclude<ExtArgs> | null
-  where?: Prisma.ProductClickOutWhereInput
-  orderBy?: Prisma.ProductClickOutOrderByWithRelationInput | Prisma.ProductClickOutOrderByWithRelationInput[]
-  cursor?: Prisma.ProductClickOutWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ProductClickOutScalarFieldEnum | Prisma.ProductClickOutScalarFieldEnum[]
-}
-
-/**
- * Product.bundleItems
- */
-export type Product$bundleItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the BundleItem
-   */
-  select?: Prisma.BundleItemSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the BundleItem
-   */
-  omit?: Prisma.BundleItemOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.BundleItemInclude<ExtArgs> | null
-  where?: Prisma.BundleItemWhereInput
-  orderBy?: Prisma.BundleItemOrderByWithRelationInput | Prisma.BundleItemOrderByWithRelationInput[]
-  cursor?: Prisma.BundleItemWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.BundleItemScalarFieldEnum | Prisma.BundleItemScalarFieldEnum[]
 }
 
 /**
